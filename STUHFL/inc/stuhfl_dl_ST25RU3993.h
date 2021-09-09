@@ -1,7 +1,13 @@
 /******************************************************************************
-  * @attention
+  * \attention
   *
-  * COPYRIGHT 2019 STMicroelectronics, all rights reserved
+  * <h2><center>&copy; COPYRIGHT(c) 2021 STMicroelectronics</center></h2>
+  *
+  * Licensed under ST MYLIBERTY SOFTWARE LICENSE AGREEMENT (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
+  *
+  *        www.st.com/myliberty
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,7 +18,6 @@
   * limitations under the License.
   *
 ******************************************************************************/
-
 
 //
 #if !defined __STUHFL_DL_ST25RU3993_EVAL_H
@@ -59,6 +64,10 @@ typedef struct {
 #define STUHFL_D_RWD_CFG_ID_ANTENNA_SWITCH    0x04    /**< Reader configuration ID for antenna switch */
 #define STUHFL_D_RWD_CFG_ID_TUNER             0x05    /**< Reader configuration ID for tuner */
 #define STUHFL_D_RWD_CFG_ID_HARDWARE_ID_NUM   0x06    /**< Reader configuration ID for hardware ID */
+
+#define STUHFL_D_INTERPOLATION_VALUES		  0x07U
+#define STUHFL_D_ATT_PWR_TABLE_SIZE			  0x0CU
+
 typedef struct {
     uint8_t                             id;     /**< I Param: Reader configuration ID */
     uint8_t                             value;  /**< I/O Param: Value of corresponding configuration */
@@ -123,19 +132,19 @@ typedef struct {
 
 #define STUHFL_D_PROFILE_NEWTUNING           0xFF
 
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_Freq_Profile {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_Freq_Profile {
     uint8_t                             profile;    /**< I Param: Frequency profile */
 } STUHFL_T_ST25RU3993_FreqProfile;
 #define STUHFL_O_ST25RU3993_FREQ_PROFILE_INIT()     {STUHFL_D_PROFILE_EUROPE}
 
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_Freq_Profile_Add2Custom {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_Freq_Profile_Add2Custom {
     bool                                clearList;  /**< I Param: Flag to clear all tuning entries */
     uint32_t                            frequency;  /**< I Param: Frequency to append to custom profile */
 } STUHFL_T_ST25RU3993_FreqProfileAddToCustom;
 #define STUHFL_O_ST25RU3993_FREQ_PROFILE_ADD_TO_CUSTOM_INIT()    {true, STUHFL_D_DEFAULT_FREQUENCY}
 
 /* Get */
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_Freq_Profile_Info {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_Freq_Profile_Info {
     uint8_t                             profile;        /**< O Param: Current used profile index */
     uint32_t                            minFrequency;   /**< O Param: Minimum frequency for profile */
     uint32_t                            maxFrequency;   /**< O Param: Maximum frequency for profile */
@@ -508,7 +517,7 @@ typedef struct {
 
 // --------------------------------------------------------------------------
 /*  */
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_TuningTableEntry {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_TuningTableEntry {
     uint8_t     entry;                                  /**< I Param: table entry, when set to 0xFF the entry will be appended to the end of the table */
     uint32_t    freq;                                   /**< I/O Param: Frequency for when this entry shall be applied */
     uint8_t     applyCapValues[STUHFL_D_MAX_ANTENNA];   /**< I Param: flag to specify if cap values should be applied for antenna */
@@ -520,14 +529,14 @@ typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_TuningTableEntry {
 #define STUHFL_O_ST25RU3993_TUNING_TABLE_ENTRY_INIT()        {0, STUHFL_D_DEFAULT_FREQUENCY, {false, false, false, false}, {0,0,0,0}, {0,0,0,0}, {0,0,0,0}, {0xFFFF,0xFFFF,0xFFFF,0xFFFF}}
 
 /*  */
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_TunerTableSet {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_TunerTableSet {
     uint8_t     profile;    /**< I Param: Profile identifier */
     uint32_t    freq;       /**< I Param: Frequency */
 } STUHFL_T_ST25RU3993_TunerTableSet;
 #define STUHFL_O_ST25RU3993_TUNER_TABLE_SET_INIT()       {STUHFL_D_PROFILE_EUROPE, STUHFL_D_RESET_DEFAULT_ALL_FREQS}
 
 /* Get/Set */
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_Tuning {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_Tuning {
     uint8_t antenna;    /**< I Param: Antenna on which tuning settings apply */
     uint8_t cin;        /**< I/O Param: Measured IN capacitance of tuning PI network */
     uint8_t clen;       /**< I/O Param: Measured LEN capacitance of tuning PI network */
@@ -536,7 +545,7 @@ typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_Tuning {
 #define STUHFL_O_ST25RU3993_TUNING_INIT()        {STUHFL_D_ANTENNA_1, 0, 0, 0}
 
 /*  */
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_TuningTableInfo {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_TuningTableInfo {
     uint8_t profile;                    /**< I Param: profile ID where number of entries should be replied */
     uint8_t numEntries;                 /**< O Param: number of entries for requested profile */
 } STUHFL_T_ST25RU3993_TuningTableInfo;
@@ -550,6 +559,65 @@ typedef struct {
 } STUHFL_T_ST25RU3993_TuningCaps;
 #define STUHFL_O_ST25RU3993_TUNING_CAPS_INIT()       {STUHFL_D_ANTENNA_1, 0, STUHFL_O_ST25RU3993_CAPS_INIT()}
 
+/* Get */
+typedef struct {
+	double					AMPL_temp; /* Power Amplifier temperature */
+	double 					CPU_temp;  /* CPU temperature */
+	double 					RFID_temp; /* RFID temperature */
+}STUHFL_T_ST25RU3993_Temperature;
+
+/* Get */
+typedef struct {
+    float RF_PwrDetected; /* Power Amplifier temperature */
+}STUHFL_T_ST25RU3993_RF_PwrDetected_V;
+
+/* Get */
+typedef struct {
+    float RF_PwrDetected_V; /* Power Amplifier */
+    float RF_PwrDetected_dBm; /* Power Amplifier in dBm*/
+}STUHFL_T_ST25RU3993_RF_PwrDetected;
+
+/* Get/Set */
+typedef struct {
+	float Attenuator_Voltage; /* Power Amplifier temperature */
+}STUHFL_T_ST25RU3993_Attenuator;
+
+/* Get/Set */
+typedef struct {
+	uint8_t antenna1; /* Enable STUHFL_D_ANTENNA_POWER_MODE_ON/Disable STUHFL_D_ANTENNA_POWER_MODE_OFF*/
+	uint8_t antenna2; /* Enable STUHFL_D_ANTENNA_POWER_MODE_ON/Disable STUHFL_D_ANTENNA_POWER_MODE_OFF*/
+	uint8_t antenna3; /* Enable STUHFL_D_ANTENNA_POWER_MODE_ON/Disable STUHFL_D_ANTENNA_POWER_MODE_OFF*/
+	uint8_t antenna4; /* Enable STUHFL_D_ANTENNA_POWER_MODE_ON/Disable STUHFL_D_ANTENNA_POWER_MODE_OFF*/
+}STUHFL_T_ST25RU3993_AntennaSequence; /* Antenna sequence for the alternate mode */
+#define STUHFL_O_ST25RU3993_ANTENNA_SEQUENCE_INIT()         {STUHFL_D_ANTENNA_POWER_MODE_ON,STUHFL_D_ANTENNA_POWER_MODE_OFF,STUHFL_D_ANTENNA_POWER_MODE_OFF,STUHFL_D_ANTENNA_POWER_MODE_OFF}
+
+
+/* Get/Set */
+typedef struct {
+    float pwrDetectedV[STUHFL_D_INTERPOLATION_VALUES]; /* Power Amplifier */
+    float pwrDetectedVdBm[STUHFL_D_INTERPOLATION_VALUES]; /* Power Amplifier in dBm*/
+}STUHFL_T_ST25RU3993_RF_PwrDetectedCalibration;
+
+/* Set */
+typedef struct
+{
+    uint8_t enable; /* Enable the rf detector calibrator */
+    int8_t txOutputLevel; /* The output level of the reader */
+}STUHFL_T_ST25RU3993_RF_DetectorCalibrationEnable;
+
+/* Get */
+typedef struct
+{
+    uint8_t state; /* Enable the rf detector calibrator */
+}STUHFL_T_ST25RU3993_RF_AttenuationPowerCalibrationState;
+
+/* Get/Set */
+typedef struct {
+    float attenuation[STUHFL_D_ATT_PWR_TABLE_SIZE]; /* Power Amplifier */
+    float pwr_max[STUHFL_D_ATT_PWR_TABLE_SIZE]; /* Power Amplifier in dBm*/
+    float pwr_min[STUHFL_D_ATT_PWR_TABLE_SIZE]; /* Power Amplifier in dBm*/
+}STUHFL_T_ST25RU3993_RF_AttenuationPowerDetectedTables;
+
 /**< Tune algorithm definitions */
 #define STUHFL_D_TUNING_ALGO_NONE        0
 #define STUHFL_D_TUNING_ALGO_FAST        1   /**< Simple automatic tuning function.This function tries to find an optimized tuner setting(minimal reflected power). The function starts at the current tuner setting and modifies the tuner caps until a setting with a minimum of reflected power is found.When changing the tuner further leads to an increase of reflected power the algorithm stops. Note that, although the algorithm has been optimized to not immediately stop at local minima of reflected power, it still might not find the tuner setting with the lowest reflected power.The algorithm of tunerMultiHillClimb() is probably producing better results, but it is slower. */
@@ -559,7 +627,7 @@ typedef struct {
 #define STUHFL_D_TUNING_ALGO_ENABLE_FPD  0x80    /**<STUHFL_DEPRECATED: Enable False Positive Detection during tuning algorithm.*/
 
 /* */
-typedef struct STUHFL_DEPRECATED STUHFL_S_ST25RU3993_Tune {
+typedef struct/* STUHFL_DEPRECATED */STUHFL_S_ST25RU3993_Tune {
     uint8_t algo;                   /**< I Param: Used algorithm for tuning. */
 } STUHFL_T_ST25RU3993_Tune;
 #define STUHFL_O_ST25RU3993_TUNE_INIT()      {STUHFL_D_TUNING_ALGO_MEDIUM}

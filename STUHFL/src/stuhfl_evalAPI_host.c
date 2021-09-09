@@ -1,7 +1,13 @@
 /******************************************************************************
-  * @attention
+  * \attention
   *
-  * COPYRIGHT 2019 STMicroelectronics, all rights reserved
+  * <h2><center>&copy; COPYRIGHT(c) 2021 STMicroelectronics</center></h2>
+  *
+  * Licensed under ST MYLIBERTY SOFTWARE LICENSE AGREEMENT (the "License");
+  * You may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at:
+  *
+  *        www.st.com/myliberty
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,7 +18,6 @@
   * limitations under the License.
   *
 ******************************************************************************/
-
 /** @file
  *
  *  @author ST Microelectronics
@@ -58,7 +63,7 @@ uint16_t sndDataLen = SND_BUFFER_SIZE;
 uint8_t rcvData[RCV_BUFFER_SIZE];
 uint16_t rcvDataLen = RCV_BUFFER_SIZE;
 
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Connect(char *szComPort)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Connect(char *szComPort)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_PORT, (STUHFL_T_PARAM_VALUE)szComPort);
@@ -75,13 +80,28 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Connect(char *szComPort)
     return retCode;
 }
 
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Disconnect()
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Disconnect()
 {
     return STUHFL_F_Disconnect();
 }
 
 // ---- Getter Generic ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_BoardVersion(STUHFL_T_Version *swVersion, STUHFL_T_Version *hwVersion)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_ReaderVersion(STUHFL_T_Version *swVersion, STUHFL_T_Version *hwVersion, STUHFL_T_Version *rdVersion)
+{
+    memset(swVersion, 0, sizeof(STUHFL_T_Version));
+    memset(hwVersion, 0, sizeof(STUHFL_T_Version));
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetVersion(&swVersion->major, &swVersion->minor, &swVersion->micro, &swVersion->nano,
+        &hwVersion->major, &hwVersion->minor, &hwVersion->micro, &hwVersion->nano);
+
+    retCode |= STUHFL_F_GetRDVersion(&rdVersion->major, &rdVersion->minor, &rdVersion->micro, &rdVersion->nano);
+
+    TRACE_EVAL_API("Get_ReaderVersion(swVersion: %d.%d.%d.%d, HW_Version: %d.%d.%d.%d, RD_Version: %d.%d.%d.%d) = %d", swVersion->major, swVersion->minor, swVersion->micro, swVersion->nano,
+        hwVersion->major, hwVersion->minor, hwVersion->micro, hwVersion->nano, rdVersion->major, rdVersion->minor, rdVersion->micro, rdVersion->nano, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_BoardVersion(STUHFL_T_Version *swVersion, STUHFL_T_Version *hwVersion)
 {
     memset(swVersion, 0, sizeof(STUHFL_T_Version));
     memset(hwVersion, 0, sizeof(STUHFL_T_Version));
@@ -93,7 +113,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_BoardVersion(STUHFL_T_Version *sw
                    hwVersion->major, hwVersion->minor, hwVersion->micro, hwVersion->nano, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_BoardInfo(STUHFL_T_VersionInfo *swInfo, STUHFL_T_VersionInfo *hwInfo)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_BoardInfo(STUHFL_T_VersionInfo *swInfo, STUHFL_T_VersionInfo *hwInfo)
 {
     memset(swInfo, 0, sizeof(STUHFL_T_VersionInfo));
     memset(hwInfo, 0, sizeof(STUHFL_T_VersionInfo));
@@ -105,13 +125,13 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_BoardInfo(STUHFL_T_VersionInfo *s
     return retCode;
 }
 
-STUHFL_DLL_API void CALL_CONV Reboot()
+/* STUHFL_DLL_API */ void /* CALL_CONV */ Reboot()
 {
     TRACE_EVAL_API_START();
     STUHFL_F_Reboot();
     TRACE_EVAL_API("Reboot()");
 }
-STUHFL_DLL_API void CALL_CONV EnterBootloader()
+/* STUHFL_DLL_API */ void /* CALL_CONV */ EnterBootloader()
 {
     TRACE_EVAL_API_START();
     STUHFL_F_EnterBootloader();
@@ -119,14 +139,14 @@ STUHFL_DLL_API void CALL_CONV EnterBootloader()
 }
 
 // ---- Setter Register ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Register(STUHFL_T_ST25RU3993_Register *reg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Register(STUHFL_T_ST25RU3993_Register *reg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_REGISTER, (STUHFL_T_PARAM_VALUE)reg);
     TRACE_EVAL_API("Set_Register(addr: 0x%02x, data: 0x%02x) = %d", reg->addr, reg->data, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_RegisterMultiple(STUHFL_T_ST25RU3993_Register **reg, uint8_t numReg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_RegisterMultiple(STUHFL_T_ST25RU3993_Register **reg, uint8_t numReg)
 {
     STUHFL_T_PARAM params[256];
     for (int i = 0; i < numReg; i++) {
@@ -146,14 +166,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_RegisterMultiple(STUHFL_T_ST25RU3
 }
 
 // ---- Getter Register ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Register(STUHFL_T_ST25RU3993_Register *reg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Register(STUHFL_T_ST25RU3993_Register *reg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_REGISTER, (STUHFL_T_PARAM_VALUE)reg);
     TRACE_EVAL_API("Get_Register(addr: 0x%02x, data: 0x%02x) = %d", reg->addr, reg->data, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_RegisterMultiple(uint8_t numReg, STUHFL_T_ST25RU3993_Register **reg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_RegisterMultiple(uint8_t numReg, STUHFL_T_ST25RU3993_Register **reg)
 {
     STUHFL_T_PARAM params[256];
     for (int i = 0; i < numReg; i++) {
@@ -175,7 +195,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_RegisterMultiple(uint8_t numReg, 
 
 
 // ---- Setter RwdCfg ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_RwdCfg(STUHFL_T_ST25RU3993_RwdConfig *rwdCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_RwdCfg(STUHFL_T_ST25RU3993_RwdConfig *rwdCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_CONFIG, (STUHFL_T_PARAM_VALUE)rwdCfg);
@@ -184,7 +204,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_RwdCfg(STUHFL_T_ST25RU3993_RwdCon
 }
 
 // ---- Getter RwdCfg ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_RwdCfg(STUHFL_T_ST25RU3993_RwdConfig *rwdCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_RwdCfg(STUHFL_T_ST25RU3993_RwdConfig *rwdCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_CONFIG, (STUHFL_T_PARAM_VALUE)rwdCfg);
@@ -205,28 +225,28 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_RwdCfg(STUHFL_T_ST25RU3993_RwdCon
 }
 
 // ---- Setter RxFilter & Calibration ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gen2_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GEN2_RX_FILTER, (STUHFL_T_PARAM_VALUE)rxFilter);
     TRACE_EVAL_API("Set_Gen2_RxFilter(blf: 0x%02x, coding: 0x%02x, rxFilter: 0x%02x) = %d", rxFilter->blf, rxFilter->coding, rxFilter->value, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gb29768_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GB29768_RX_FILTER, (STUHFL_T_PARAM_VALUE)rxFilter);
     TRACE_EVAL_API("Set_Gb29768_RxFilter(blf: 0x%02x, coding: 0x%02x, rxFilter: 0x%02x) = %d", rxFilter->blf, rxFilter->coding, rxFilter->value, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gen2_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GEN2_FILTER_CALIBRATION, (STUHFL_T_PARAM_VALUE)fCal);
     TRACE_EVAL_API("Set_Gen2_FilterCalibration(blf: 0x%02x, coding: 0x%02x, highPass: 0x%02x, lowPass: 0x%02x) = %d", fCal->blf, fCal->coding, fCal->highPass, fCal->lowPass, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gb29768_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GB29768_FILTER_CALIBRATION, (STUHFL_T_PARAM_VALUE)fCal);
@@ -235,14 +255,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_FilterCalibration(STUHFL_
 }
 
 // ---- Getter RxFilter & Calibration ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gen2_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GEN2_RX_FILTER, (STUHFL_T_PARAM_VALUE)rxFilter);
     TRACE_EVAL_API("Get_Gen2_RxFilter(blf: 0x%02x, coding: 0x%02x, rxFilter: 0x%02x) = %d", rxFilter->blf, rxFilter->coding, rxFilter->value, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gb29768_RxFilter(STUHFL_T_ST25RU3993_RxFilter *rxFilter)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GB29768_RX_FILTER, (STUHFL_T_PARAM_VALUE)rxFilter);
@@ -250,14 +270,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_RxFilter(STUHFL_T_ST25RU3
     return retCode;
 }
 
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gen2_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GEN2_FILTER_CALIBRATION, (STUHFL_T_PARAM_VALUE)fCal);
     TRACE_EVAL_API("Get_Gen2_FilterCalibration(blf: 0x%02x, coding: 0x%02x, highPass: 0x%02x, lowPass: 0x%02x) = %d", fCal->blf, fCal->coding, fCal->highPass, fCal->lowPass, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gb29768_FilterCalibration(STUHFL_T_ST25RU3993_FilterCalibration *fCal)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_GB29768_FILTER_CALIBRATION, (STUHFL_T_PARAM_VALUE)fCal);
@@ -266,7 +286,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_FilterCalibration(STUHFL_
 }
 
 // ---- Setter Antenna Power ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_AntennaPower(STUHFL_T_ST25RU3993_AntennaPower *antPwr)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_AntennaPower(STUHFL_T_ST25RU3993_AntennaPower *antPwr)
 {
     // depending on the timeout it might be longer as the communication timeout..
     uint32_t rdTimeOut = 4000;
@@ -284,7 +304,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_AntennaPower(STUHFL_T_ST25RU3993_
 }
 
 // ---- Getter Antenna Power ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_AntennaPower(STUHFL_T_ST25RU3993_AntennaPower *antPwr)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_AntennaPower(STUHFL_T_ST25RU3993_AntennaPower *antPwr)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_ANTENNA_POWER, (STUHFL_T_PARAM_VALUE)antPwr);
@@ -304,7 +324,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_AntennaPower(STUHFL_T_ST25RU3993_
 
 
 // ---- Setter Frequency ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_ChannelList(STUHFL_T_ST25RU3993_ChannelList *channelList)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_ChannelList(STUHFL_T_ST25RU3993_ChannelList *channelList)
 {
     TRACE_EVAL_API_CLEAR();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_CHANNEL_LIST, (STUHFL_T_PARAM_VALUE)channelList);
@@ -316,35 +336,35 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_ChannelList(STUHFL_T_ST25RU3993_C
     TRACE_EVAL_API_FLUSH();
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_FreqProfile(STUHFL_T_ST25RU3993_FreqProfile *freqProfile)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_FreqProfile(STUHFL_T_ST25RU3993_FreqProfile *freqProfile)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_PROFILE, (STUHFL_T_PARAM_VALUE)freqProfile);
     TRACE_EVAL_API("Set_FreqProfile(profile: %d) = %d", freqProfile->profile, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_FreqProfileAddToCustom(STUHFL_T_ST25RU3993_FreqProfileAddToCustom *freqProfileAdd)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_FreqProfileAddToCustom(STUHFL_T_ST25RU3993_FreqProfileAddToCustom *freqProfileAdd)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_PROFILE_ADDTOCUSTOM, (STUHFL_T_PARAM_VALUE)freqProfileAdd);
     TRACE_EVAL_API("Set_FreqProfileAddToCustom(clearList: %d, frequency: %d) = %d", freqProfileAdd->clearList, freqProfileAdd->frequency, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_FreqHop(STUHFL_T_ST25RU3993_FreqHop *freqHop)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_FreqHop(STUHFL_T_ST25RU3993_FreqHop *freqHop)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_HOP, (STUHFL_T_PARAM_VALUE)freqHop);
     TRACE_EVAL_API("Set_FreqHop(maxSendingTime: %d, minSendingTime: %d, mode: %d) = %d", freqHop->maxSendingTime, freqHop->minSendingTime, freqHop->mode, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_FreqLBT(STUHFL_T_ST25RU3993_FreqLBT *freqLBT)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_FreqLBT(STUHFL_T_ST25RU3993_FreqLBT *freqLBT)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_LBT, (STUHFL_T_PARAM_VALUE)freqLBT);
     TRACE_EVAL_API("Set_FreqLBT(listeningTime: %d, idleTime: %d, rssiLogThreshold: %d, skipLBTcheck: %d) = %d", freqLBT->listeningTime, freqLBT->idleTime, freqLBT->rssiLogThreshold, freqLBT->skipLBTcheck, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_FreqContinuousModulation(STUHFL_T_ST25RU3993_FreqContinuousModulation *freqContMod)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_FreqContinuousModulation(STUHFL_T_ST25RU3993_FreqContinuousModulation *freqContMod)
 {
     uint32_t rdTimeOut = 4000;
     TRACE_EVAL_API_START();
@@ -360,7 +380,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_FreqContinuousModulation(STUHFL_T
 }
 
 // ---- Getter Frequency ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_ChannelList(STUHFL_T_ST25RU3993_ChannelList *channelList)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_ChannelList(STUHFL_T_ST25RU3993_ChannelList *channelList)
 {
     TRACE_EVAL_API_CLEAR();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_CHANNEL_LIST, (STUHFL_T_PARAM_VALUE)channelList);
@@ -390,7 +410,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_ChannelList(STUHFL_T_ST25RU3993_C
     TRACE_EVAL_API_FLUSH();
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqRSSI(STUHFL_T_ST25RU3993_FreqRssi *freqRSSI)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_FreqRSSI(STUHFL_T_ST25RU3993_FreqRssi *freqRSSI)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_RSSI, (STUHFL_T_PARAM_VALUE)freqRSSI);
@@ -406,7 +426,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqRSSI(STUHFL_T_ST25RU3993_Freq
     TRACE_EVAL_API("Get_FreqRSSI(frequency: %d, rssiLogI: %d, rssiLogQ: %d) = %d", freqRSSI->frequency, freqRSSI->rssiLogI, freqRSSI->rssiLogQ, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqReflectedPower(STUHFL_T_ST25RU3993_FreqReflectedPowerInfo *freqReflectedPower)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_FreqReflectedPower(STUHFL_T_ST25RU3993_FreqReflectedPowerInfo *freqReflectedPower)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_REFLECTED, (STUHFL_T_PARAM_VALUE)freqReflectedPower);
@@ -420,7 +440,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqReflectedPower(STUHFL_T_ST25R
     TRACE_EVAL_API("Get_FreqReflectedPower(frequency: %d, applyTunerSetting: %d, reflectedI: %d, reflectedQ: %d) = %d", freqReflectedPower->frequency, freqReflectedPower->applyTunerSetting, freqReflectedPower->reflectedI, freqReflectedPower->reflectedQ, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqProfileInfo(STUHFL_T_ST25RU3993_FreqProfileInfo *freqProfileInfo)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_FreqProfileInfo(STUHFL_T_ST25RU3993_FreqProfileInfo *freqProfileInfo)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_PROFILE_INFO, (STUHFL_T_PARAM_VALUE)freqProfileInfo);
@@ -437,7 +457,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqProfileInfo(STUHFL_T_ST25RU39
     TRACE_EVAL_API("Get_FreqProfileInfo(profile: %d, minFreq : %d, maxFreq: %d, numFrequencies : %d) = %d", freqProfileInfo->profile, freqProfileInfo->minFrequency, freqProfileInfo->maxFrequency, freqProfileInfo->numFrequencies, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqHop(STUHFL_T_ST25RU3993_FreqHop *freqHop)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_FreqHop(STUHFL_T_ST25RU3993_FreqHop *freqHop)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_HOP, (STUHFL_T_PARAM_VALUE)freqHop);
@@ -451,7 +471,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqHop(STUHFL_T_ST25RU3993_FreqH
     TRACE_EVAL_API("Get_FreqHop(maxSendingTime: %d, minSendingTime: %d, mode: %d) = %d", freqHop->maxSendingTime, freqHop->minSendingTime, freqHop->mode, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqLBT(STUHFL_T_ST25RU3993_FreqLBT *freqLBT)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_FreqLBT(STUHFL_T_ST25RU3993_FreqLBT *freqLBT)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_FREQ_LBT, (STUHFL_T_PARAM_VALUE)freqLBT);
@@ -462,14 +482,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_FreqLBT(STUHFL_T_ST25RU3993_FreqL
 
 
 // ---- Setter SW Cfg ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_Timings(STUHFL_T_ST25RU3993_Gen2_Timings *gen2Timings)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gen2_Timings(STUHFL_T_ST25RU3993_Gen2_Timings *gen2Timings)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GEN2_TIMINGS, (STUHFL_T_PARAM_VALUE)gen2Timings);
     TRACE_EVAL_API("Set_Gen2_Timings(T4Min: %d) = %d", gen2Timings->T4Min, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_ProtocolCfg(STUHFL_T_ST25RU3993_Gen2_ProtocolCfg *gen2ProtocolCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gen2_ProtocolCfg(STUHFL_T_ST25RU3993_Gen2_ProtocolCfg *gen2ProtocolCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GEN2_PROTOCOL_CFG, (STUHFL_T_PARAM_VALUE)gen2ProtocolCfg);
@@ -477,7 +497,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_ProtocolCfg(STUHFL_T_ST25RU3
                    gen2ProtocolCfg->tari, gen2ProtocolCfg->blf, gen2ProtocolCfg->coding, gen2ProtocolCfg->trext, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_ProtocolCfg(STUHFL_T_ST25RU3993_Gb29768_ProtocolCfg *gb29768ProtocolCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gb29768_ProtocolCfg(STUHFL_T_ST25RU3993_Gb29768_ProtocolCfg *gb29768ProtocolCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GB29768_PROTOCOL_CFG, (STUHFL_T_PARAM_VALUE)gb29768ProtocolCfg);
@@ -485,21 +505,21 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_ProtocolCfg(STUHFL_T_ST25
                    gb29768ProtocolCfg->tc, gb29768ProtocolCfg->blf, gb29768ProtocolCfg->coding, gb29768ProtocolCfg->trext, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TxRxCfg(STUHFL_T_ST25RU3993_TxRxCfg *txRxCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_TxRxCfg(STUHFL_T_ST25RU3993_TxRxCfg *txRxCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_TXRX_CFG, (STUHFL_T_PARAM_VALUE)txRxCfg);
     TRACE_EVAL_API("Set_TxRxCfg(txOutputLevel: %d, rxSensitivity: %d, usedAntenna: %d, alternateAntennaInterval: %d) = %d", txRxCfg->txOutputLevel, txRxCfg->rxSensitivity, txRxCfg->usedAntenna, txRxCfg->alternateAntennaInterval, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_PowerAmplifierCfg(STUHFL_T_ST25RU3993_PowerAmplifierCfg *paCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_PowerAmplifierCfg(STUHFL_T_ST25RU3993_PowerAmplifierCfg *paCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_POWER_AMPLIFIER_CFG, (STUHFL_T_PARAM_VALUE)paCfg);
     TRACE_EVAL_API("Set_PowerAmplifierCfg(external: %d) = %d", paCfg->external, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_InventoryCfg(STUHFL_T_ST25RU3993_Gen2_InventoryCfg *invGen2Cfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gen2_InventoryCfg(STUHFL_T_ST25RU3993_Gen2_InventoryCfg *invGen2Cfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GEN2_INVENTORY_CFG, (STUHFL_T_PARAM_VALUE)invGen2Cfg);
@@ -515,7 +535,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gen2_InventoryCfg(STUHFL_T_ST25RU
                    invGen2Cfg->adaptiveSensitivity.enable, invGen2Cfg->adaptiveSensitivity.interval, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_InventoryCfg(STUHFL_T_ST25RU3993_Gb29768_InventoryCfg *invGb29768Cfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Gb29768_InventoryCfg(STUHFL_T_ST25RU3993_Gb29768_InventoryCfg *invGb29768Cfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GB29768_INVENTORY_CFG, (STUHFL_T_PARAM_VALUE)invGb29768Cfg);
@@ -530,14 +550,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Gb29768_InventoryCfg(STUHFL_T_ST2
 }
 
 // ---- Getter SW Cfg ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_Timings(STUHFL_T_ST25RU3993_Gen2_Timings *gen2Timings)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gen2_Timings(STUHFL_T_ST25RU3993_Gen2_Timings *gen2Timings)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GEN2_TIMINGS, (STUHFL_T_PARAM_VALUE)gen2Timings);
     TRACE_EVAL_API("Get_Gen2_Timings(T4Min: %d) = %d", gen2Timings->T4Min, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_ProtocolCfg(STUHFL_T_ST25RU3993_Gen2_ProtocolCfg *gen2ProtocolCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gen2_ProtocolCfg(STUHFL_T_ST25RU3993_Gen2_ProtocolCfg *gen2ProtocolCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GEN2_PROTOCOL_CFG, (STUHFL_T_PARAM_VALUE)gen2ProtocolCfg);
@@ -554,7 +574,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_ProtocolCfg(STUHFL_T_ST25RU3
                    gen2ProtocolCfg->tari, gen2ProtocolCfg->blf, gen2ProtocolCfg->coding, gen2ProtocolCfg->trext, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_ProtocolCfg(STUHFL_T_ST25RU3993_Gb29768_ProtocolCfg *gb29768ProtocolCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gb29768_ProtocolCfg(STUHFL_T_ST25RU3993_Gb29768_ProtocolCfg *gb29768ProtocolCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GB29768_PROTOCOL_CFG, (STUHFL_T_PARAM_VALUE)gb29768ProtocolCfg);
@@ -571,7 +591,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_ProtocolCfg(STUHFL_T_ST25
                    gb29768ProtocolCfg->tc, gb29768ProtocolCfg->blf, gb29768ProtocolCfg->coding, gb29768ProtocolCfg->trext, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TxRxCfg(STUHFL_T_ST25RU3993_TxRxCfg *txRxCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_TxRxCfg(STUHFL_T_ST25RU3993_TxRxCfg *txRxCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_TXRX_CFG, (STUHFL_T_PARAM_VALUE)txRxCfg);
@@ -590,14 +610,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TxRxCfg(STUHFL_T_ST25RU3993_TxRxC
     TRACE_EVAL_API("Get_TxRxCfg(txOutputLevel: %d, rxSensitivity: %d, usedAntenna: %d, alternateAntennaInterval: %d) = %d", txRxCfg->txOutputLevel, txRxCfg->rxSensitivity, txRxCfg->usedAntenna, txRxCfg->alternateAntennaInterval, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_PowerAmplifierCfg(STUHFL_T_ST25RU3993_PowerAmplifierCfg *paCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_PowerAmplifierCfg(STUHFL_T_ST25RU3993_PowerAmplifierCfg *paCfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_POWER_AMPLIFIER_CFG, (STUHFL_T_PARAM_VALUE)paCfg);
     TRACE_EVAL_API("Get_PowerAmplifierCfg(external: %d) = %d", paCfg->external, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_InventoryCfg(STUHFL_T_ST25RU3993_Gen2_InventoryCfg *invGen2Cfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gen2_InventoryCfg(STUHFL_T_ST25RU3993_Gen2_InventoryCfg *invGen2Cfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GEN2_INVENTORY_CFG, (STUHFL_T_PARAM_VALUE)invGen2Cfg);
@@ -623,7 +643,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gen2_InventoryCfg(STUHFL_T_ST25RU
                    invGen2Cfg->adaptiveSensitivity.enable, invGen2Cfg->adaptiveSensitivity.interval, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_InventoryCfg(STUHFL_T_ST25RU3993_Gb29768_InventoryCfg *invGb29768Cfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Gb29768_InventoryCfg(STUHFL_T_ST25RU3993_Gb29768_InventoryCfg *invGb29768Cfg)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_RWD_GB29768_INVENTORY_CFG, (STUHFL_T_PARAM_VALUE)invGb29768Cfg);
@@ -650,14 +670,14 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Gb29768_InventoryCfg(STUHFL_T_ST2
 
 
 // ---- Setter Tuning ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_Tuning(STUHFL_T_ST25RU3993_Tuning *tuning)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_Tuning(STUHFL_T_ST25RU3993_Tuning *tuning)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING, (STUHFL_T_PARAM_VALUE)tuning);
     TRACE_EVAL_API("Set_Tuning(antenna: %d, cin: %d, clen: %d, cout: %d) = %d", tuning->antenna, tuning->cin, tuning->clen, tuning->cout, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningTableEntry(STUHFL_T_ST25RU3993_TuningTableEntry *tuningTableEntry)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_TuningTableEntry(STUHFL_T_ST25RU3993_TuningTableEntry *tuningTableEntry)
 {
 #define TB_SIZE    256U
     char tb[5][TB_SIZE];
@@ -668,28 +688,28 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningTableEntry(STUHFL_T_ST25RU3
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningTableDefault(STUHFL_T_ST25RU3993_TunerTableSet *set)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_TuningTableDefault(STUHFL_T_ST25RU3993_TunerTableSet *set)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING_TABLE_DEFAULT, (STUHFL_T_PARAM_VALUE)set);
     TRACE_EVAL_API("Set_TuningTableDefault(profile: %d, freq: %d) = %d", set->profile, set->freq, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningTableSave2Flash(void)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_TuningTableSave2Flash(void)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING_TABLE_SAVE, (STUHFL_T_PARAM_VALUE)NULL);
     TRACE_EVAL_API("Set_TuningTableSave2Flash() = %d", retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningTableEmpty(void)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_TuningTableEmpty(void)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING_TABLE_EMPTY, (STUHFL_T_PARAM_VALUE)NULL);
     TRACE_EVAL_API("Set_TuningTableEmpty() = %d", retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningCaps(STUHFL_T_ST25RU3993_TuningCaps *tuning)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_TuningCaps(STUHFL_T_ST25RU3993_TuningCaps *tuning)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING_CAPS, (STUHFL_T_PARAM_VALUE)tuning);
@@ -698,7 +718,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Set_TuningCaps(STUHFL_T_ST25RU3993_Tu
 }
 
 // ---- Getter Tuning ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Tuning(STUHFL_T_ST25RU3993_Tuning *tuning)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_Tuning(STUHFL_T_ST25RU3993_Tuning *tuning)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING, (STUHFL_T_PARAM_VALUE)tuning);
@@ -718,7 +738,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_Tuning(STUHFL_T_ST25RU3993_Tuning
     return retCode;
 }
 
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TuningTableEntry(STUHFL_T_ST25RU3993_TuningTableEntry *tuningTableEntry)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_TuningTableEntry(STUHFL_T_ST25RU3993_TuningTableEntry *tuningTableEntry)
 {
 #define TB_SIZE    256U
     char tb[5][TB_SIZE];
@@ -739,7 +759,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TuningTableEntry(STUHFL_T_ST25RU3
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TuningTableInfo(STUHFL_T_ST25RU3993_TuningTableInfo *tuningTableInfo)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_TuningTableInfo(STUHFL_T_ST25RU3993_TuningTableInfo *tuningTableInfo)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING_TABLE_INFO, (STUHFL_T_PARAM_VALUE)tuningTableInfo);
@@ -754,7 +774,99 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TuningTableInfo(STUHFL_T_ST25RU39
     TRACE_EVAL_API("Get_TuningTableInfo(profile: %d, numEntries: %d) = %d", tuningTableInfo->profile, tuningTableInfo->numEntries, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TuningCaps(STUHFL_T_ST25RU3993_TuningCaps *tuning)
+
+/* STUHFL_DLL_API */  STUHFL_T_RET_CODE /* CALL_CONV */  Get_Temperature(STUHFL_T_ST25RU3993_Temperature *temp)
+{
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_TEMPERATURE, (STUHFL_T_PARAM_VALUE)temp);
+    TRACE_EVAL_API("Temperature( Amplifier = %f, CPU = %f, RFID = %f), retCode = %d", temp->AMPL_temp, temp->CPU_temp, temp->RFID_temp, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */  STUHFL_T_RET_CODE /* CALL_CONV */  Get_PwrDetected(STUHFL_T_ST25RU3993_RF_PwrDetected *pwrDetected)
+{
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_PWR_DETECTED, (STUHFL_T_PARAM_VALUE)pwrDetected);
+    TRACE_EVAL_API("Power Detected: %f, retCode = %d", pwrDetected->RF_PwrDetected_V,  retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */  STUHFL_T_RET_CODE /* CALL_CONV */  Get_Attenuation(STUHFL_T_ST25RU3993_Attenuator *attenuation)
+{
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_ATTENUATOR, (STUHFL_T_PARAM_VALUE)attenuation);
+    TRACE_EVAL_API("Attenuation: %f, retCode = %d ", attenuation->Attenuator_Voltage, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */  STUHFL_T_RET_CODE /* CALL_CONV */  Set_Attenuation(STUHFL_T_ST25RU3993_Attenuator *attenuation)
+{
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_ATTENUATOR, (STUHFL_T_PARAM_VALUE)attenuation);
+    TRACE_EVAL_API("Attenuation: %f, retCode = %d ", attenuation->Attenuator_Voltage, retCode);
+    return retCode;
+}
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /*CALL_CONV*/ Get_PowerDetectionCalibration(STUHFL_T_ST25RU3993_RF_PwrDetectedCalibration *pwrDetectionCalibrated)
+{
+    //TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_PWR_DET_CALIBRATION, (STUHFL_T_PARAM_VALUE)pwrDetectionCalibrated);
+    //TRACE_EVAL_API("pwrDetectionCalibrated: %f, retCode = %d ", attenuation->Attenuator_Voltage, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /*CALL_CONV*/ Set_PowerDetectionCalibration(STUHFL_T_ST25RU3993_RF_PwrDetectedCalibration *pwrDetectionCalibrated)
+{
+    //TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_PWR_DET_CALIBRATION, (STUHFL_T_PARAM_VALUE)pwrDetectionCalibrated);
+    //TRACE_EVAL_API("pwrDetectionCalibrated: %f, retCode = %d ", attenuation->Attenuator_Voltage, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Enable_PowerDetectionCalibration(STUHFL_T_ST25RU3993_RF_DetectorCalibrationEnable *rfDetector)
+{
+    STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_PWR_DET_CALIBRATION_ENABLE, (STUHFL_T_PARAM_VALUE)rfDetector);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /*CALL_CONV*/ Get_AttPwrCalibration(STUHFL_T_ST25RU3993_RF_AttenuationPowerDetectedTables *attPwrCalibration)
+{
+    //TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_ATT_PWR_CALIBRATION, (STUHFL_T_PARAM_VALUE)attPwrCalibration);
+    //TRACE_EVAL_API("pwrDetectionCalibrated: %f, retCode = %d ", attenuation->Attenuator_Voltage, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /*CALL_CONV*/ Start_AttPwrCalibration(void)
+{
+    //TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_ATT_PWR_CALIBRATION, (STUHFL_T_PARAM_VALUE)NULL);
+    //TRACE_EVAL_API("pwrDetectionCalibrated: %f, retCode = %d ", attenuation->Attenuator_Voltage, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ GetStateProcess_AttPwrCalibration(STUHFL_T_ST25RU3993_RF_AttenuationPowerCalibrationState *state)
+{
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUFHL_KEY_ATT_PWR_CALIBRATION_STATE, (STUHFL_T_PARAM_VALUE)state);
+    //state->state = doCalibrationEnabled;
+    return STUHFL_ERR_NONE;
+}
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_AntennaSequence(STUHFL_T_ST25RU3993_AntennaSequence *sequence )
+{
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_ANTENNA_SEQ, (STUHFL_T_PARAM_VALUE)sequence);
+    TRACE_EVAL_API("Antena sequence : antenna1: %d, antenna2 : %d, antenna3 : %d, antenna4 : %d) retCode = %d", sequence->antenna1, sequence->antenna2, sequence->antenna3, sequence->antenna4, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Set_AntennaSequence(STUHFL_T_ST25RU3993_AntennaSequence *sequence )
+{
+    TRACE_EVAL_API_START();
+    STUHFL_T_RET_CODE retCode = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_ANTENNA_SEQ, (STUHFL_T_PARAM_VALUE)sequence);
+    TRACE_EVAL_API("Antena sequence : antenna1: %d, antenna2 : %d, antenna3 : %d, antenna4 : %d) retCode = %d", sequence->antenna1, sequence->antenna2, sequence->antenna3, sequence->antenna4, retCode);
+    return retCode;
+}
+
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Get_TuningCaps(STUHFL_T_ST25RU3993_TuningCaps *tuning)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_GetParam(STUHFL_PARAM_TYPE_ST25RU3993 | STUHFL_KEY_TUNING_CAPS, (STUHFL_T_PARAM_VALUE)tuning);
@@ -776,7 +888,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Get_TuningCaps(STUHFL_T_ST25RU3993_Tu
 }
 
 // ---- Tuning ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Tune(STUHFL_T_ST25RU3993_Tune *tune)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Tune(STUHFL_T_ST25RU3993_Tune *tune)
 {
     // As tuning may take a while we increase the communication timeout to be
     uint32_t rdTimeOut = 4000;
@@ -792,7 +904,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Tune(STUHFL_T_ST25RU3993_Tune *tune)
     TRACE_EVAL_API("Tune(algo: %d, doFalsePositiveDetection: %d) = %d", tune->algo & ~STUHFL_D_TUNING_ALGO_ENABLE_FPD, (tune->algo & STUHFL_D_TUNING_ALGO_ENABLE_FPD) ? true : false, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV TuneChannel(STUHFL_T_ST25RU3993_TuneCfg *tuneCfg)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ TuneChannel(STUHFL_T_ST25RU3993_TuneCfg *tuneCfg)
 {
     // As tuning may take a while we increase the communication timeout to be
     uint32_t rdTimeOut = 4000;
@@ -810,7 +922,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV TuneChannel(STUHFL_T_ST25RU3993_TuneC
 }
 
 // ---- Gen2 ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Inventory(STUHFL_T_InventoryOption *invOption, STUHFL_T_InventoryData *invData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_Inventory(STUHFL_T_InventoryOption *invOption, STUHFL_T_InventoryData *invData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_Inventory(invOption, invData);
@@ -820,7 +932,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Inventory(STUHFL_T_InventoryOpti
                    invData->statistics.tuningStatus, invData->statistics.roundCnt, invData->statistics.sensitivity, invData->statistics.Q, invData->statistics.adc, invData->statistics.frequency, invData->statistics.tagCnt, invData->statistics.emptySlotCnt, invData->statistics.collisionCnt, invData->statistics.skipCnt, invData->statistics.preambleErrCnt, invData->statistics.crcErrCnt, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Select(STUHFL_T_Gen2_Select *selData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_Select(STUHFL_T_Gen2_Select *selData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_Select(selData);
@@ -828,7 +940,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Select(STUHFL_T_Gen2_Select *sel
                    selData->mode, selData->target, selData->action, selData->memoryBank, selData->mask[0], selData->maskBitPointer, selData->maskBitLength, selData->truncation, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Read(STUHFL_T_Read *readData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_Read(STUHFL_T_Read *readData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_Read(readData);
@@ -838,7 +950,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Read(STUHFL_T_Read *readData)
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Write(STUHFL_T_Write *writeData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_Write(STUHFL_T_Write *writeData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_Write(writeData);
@@ -848,7 +960,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Write(STUHFL_T_Write *writeData)
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_BlockWrite(STUHFL_T_BlockWrite *blockWrite)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_BlockWrite(STUHFL_T_BlockWrite *blockWrite)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_BlockWrite(blockWrite);
@@ -858,7 +970,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_BlockWrite(STUHFL_T_BlockWrite *
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Lock(STUHFL_T_Gen2_Lock *lockData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_Lock(STUHFL_T_Gen2_Lock *lockData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_Lock(lockData);
@@ -868,7 +980,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Lock(STUHFL_T_Gen2_Lock *lockDat
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Kill(STUHFL_T_Kill *killData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_Kill(STUHFL_T_Kill *killData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_Kill(killData);
@@ -878,7 +990,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_Kill(STUHFL_T_Kill *killData)
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_GenericCmd(STUHFL_T_Gen2_GenericCmd *genericCmd)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_GenericCmd(STUHFL_T_Gen2_GenericCmd *genericCmd)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_GenericCmd(genericCmd);
@@ -889,7 +1001,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_GenericCmd(STUHFL_T_Gen2_Generic
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_QueryMeasureRssi(STUHFL_T_Gen2_QueryMeasureRssi *queryMeasureRssi)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gen2_QueryMeasureRssi(STUHFL_T_Gen2_QueryMeasureRssi *queryMeasureRssi)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gen2_QueryMeasureRssi(queryMeasureRssi);
@@ -903,7 +1015,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_QueryMeasureRssi(STUHFL_T_Gen2_Q
 
 
 // ---- Gb29768 ----
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Inventory(STUHFL_T_InventoryOption *invOption, STUHFL_T_InventoryData *invData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Inventory(STUHFL_T_InventoryOption *invOption, STUHFL_T_InventoryData *invData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Inventory(invOption, invData);
@@ -913,7 +1025,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Inventory(STUHFL_T_InventoryO
                    invData->statistics.tuningStatus, invData->statistics.roundCnt, invData->statistics.sensitivity, invData->statistics.adc, invData->statistics.frequency, invData->statistics.tagCnt, invData->statistics.emptySlotCnt, invData->statistics.collisionCnt, invData->statistics.skipCnt, invData->statistics.preambleErrCnt, invData->statistics.crcErrCnt, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Sort(STUHFL_T_Gb29768_Sort *sortData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Sort(STUHFL_T_Gb29768_Sort *sortData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Sort(sortData);
@@ -921,7 +1033,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Sort(STUHFL_T_Gb29768_Sort *s
                    sortData->mode, sortData->target, sortData->rule, sortData->memoryBank, sortData->mask[0], sortData->maskBitPointer, sortData->maskBitLength, retCode);
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Read(STUHFL_T_Read *readData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Read(STUHFL_T_Read *readData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Read(readData);
@@ -931,7 +1043,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Read(STUHFL_T_Read *readData)
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Write(STUHFL_T_Write *writeData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Write(STUHFL_T_Write *writeData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Write(writeData);
@@ -941,7 +1053,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Write(STUHFL_T_Write *writeDa
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Lock(STUHFL_T_Gb29768_Lock *lockData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Lock(STUHFL_T_Gb29768_Lock *lockData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Lock(lockData);
@@ -951,7 +1063,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Lock(STUHFL_T_Gb29768_Lock *l
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Kill(STUHFL_T_Kill *killData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Kill(STUHFL_T_Kill *killData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Kill(killData);
@@ -961,7 +1073,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Kill(STUHFL_T_Kill *killData)
 #undef TB_SIZE
     return retCode;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gb29768_Erase(STUHFL_T_Gb29768_Erase *eraseData)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Gb29768_Erase(STUHFL_T_Gb29768_Erase *eraseData)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Gb29768_Erase(eraseData);
@@ -980,7 +1092,7 @@ typedef STUHFL_T_RET_CODE(*STUHFL_T_InventoryFinished)(STUHFL_T_InventoryData *d
 STUHFL_T_RET_CODE _finishedCallback(STUHFL_T_InventoryData *data);
 STUHFL_T_InventoryFinished callerFinishedCallback = NULL;
 
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Inventory_RunnerStart(STUHFL_T_InventoryOption *option, STUHFL_T_InventoryCycle cycleCallback, STUHFL_T_InventoryFinished finishedCallback, STUHFL_T_InventoryData *data)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Inventory_RunnerStart(STUHFL_T_InventoryOption *option, STUHFL_T_InventoryCycle cycleCallback, STUHFL_T_InventoryFinished finishedCallback, STUHFL_T_InventoryData *data)
 {
     // allow only one instance
     if (invRunnerId) {
@@ -1012,7 +1124,7 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Inventory_RunnerStart(STUHFL_T_Invent
 }
 
 #ifdef USE_INVENTORY_EXT
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Inventory_RunnerStartExt(STUHFL_T_InventoryOption *option, STUHFL_T_InventoryCycle cycleCallback, STUHFL_T_InventoryFinished finishedCallback, STUHFL_T_InventoryDataExt *data)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Inventory_RunnerStartExt(STUHFL_T_InventoryOption *option, STUHFL_T_InventoryCycle cycleCallback, STUHFL_T_InventoryFinished finishedCallback, STUHFL_T_InventoryDataExt *data)
 {
     // allow only one instance
     if (invRunnerId) {
@@ -1054,7 +1166,7 @@ STUHFL_T_RET_CODE _finishedCallback(STUHFL_T_InventoryData *data)
     invRunnerId = 0;
     return STUHFL_ERR_NONE;
 }
-STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Inventory_RunnerStop(void)
+/* STUHFL_DLL_API */ STUHFL_T_RET_CODE /* CALL_CONV */ Inventory_RunnerStop(void)
 {
     TRACE_EVAL_API_START();
     STUHFL_T_RET_CODE retCode = STUHFL_F_Stop(invRunnerId);

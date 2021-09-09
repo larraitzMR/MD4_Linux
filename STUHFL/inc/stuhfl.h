@@ -135,6 +135,15 @@ typedef uint16_t                                STUHFL_T_LEN16;
 #define STUHFL_KEY_TUNING_TABLE_INFO      0x00000035          /* DEPRECATED */
 //#define STUHFL_KEY_TUNE                   0x00000036
 #define STUHFL_KEY_TUNING_CAPS            0x00000037
+#define STUFHL_KEY_TEMPERATURE			  0x00000038
+#define STUFHL_KEY_PWR_DETECTED			  0x00000039
+#define STUFHL_KEY_ATTENUATOR			  0x00000040
+#define STUHFL_KEY_ANTENNA_SEQ			  0x00000041
+#define STUFHL_KEY_PWR_DETECTED_DBM		  0x00000042
+#define STUFHL_KEY_PWR_DET_CALIBRATION	  0x00000043
+#define STUFHL_KEY_ATT_PWR_CALIBRATION	  0x00000044
+#define STUFHL_KEY_ATT_PWR_CALIBRATION_STATE	0x00000045
+#define STUFHL_KEY_PWR_DET_CALIBRATION_ENABLE	0x00000046
 
 // - Gen2
 // - Iso6B
@@ -153,6 +162,7 @@ typedef uint16_t                                STUHFL_T_LEN16;
 #define STUHFL_CC_UPGRADE                                   0x02
 #define STUHFL_CC_ENTER_BOOTLOADER                          0x03
 #define STUHFL_CC_REBOOT                                    0x04
+#define STUFHL_CC_GET_RD_VERSION                            0x05
 // Command Code - Unit Layer
 #define STUHFL_CC_GET_PARAM                                 0x00
 #define STUHFL_CC_SET_PARAM                                 0x01
@@ -217,7 +227,7 @@ typedef uint16_t                                STUHFL_T_LEN16;
 #define STUHFL_TAG_TUNING_TABLE_SAVE                        0x16
 #define STUHFL_TAG_TUNING_TABLE_EMPTY                       0x17
 #define STUHFL_TAG_TUNE                                     0x18
-#define STUHFL_TAG_GEN2_TIMINGS                              0x19
+#define STUHFL_TAG_GEN2_TIMINGS                             0x19
 #define STUHFL_TAG_TUNE_CHANNEL                             0x20
 #define STUHFL_TAG_TUNING_CAPS                              0x21
 #define STUHFL_TAG_CHANNEL_LIST                             0x22
@@ -225,6 +235,16 @@ typedef uint16_t                                STUHFL_T_LEN16;
 #define STUHFL_TAG_GB29768_RX_FILTER                        0x34
 #define STUHFL_TAG_GEN2_FILTER_CALIBRATION                  0x35
 #define STUHFL_TAG_GB29768_FILTER_CALIBRATION               0x36
+#define STUHFL_TAG_TEMPERATURE								0x37
+#define STUHFL_TAG_PWR_DETECTED								0x38
+#define STUHFL_TAG_ATTENUATOR								0x39
+#define STUHFL_TAG_ANTENNA_SEQ								0x40
+#define STUHFL_TAG_PWR_DETECTED_DBM							0x41
+#define STUFHL_TAG_PWR_DET_CALIBRATION						0x42
+#define STUFHL_TAG_ATT_PWR_CALIBRATION						0x43
+#define STUFHL_TAG_ATT_PWR_CALIBRATION_STATE				0x44
+#define STUFHL_TAG_PWR_DET_CALIBRATION_ENABLE				0x45
+
 // TLV TAGs - Session Layer
 #define STUHFL_TAG_GEN2_INVENTORY_OPTION                    0x01
 #define STUHFL_TAG_GEN2_INVENTORY                           0x02
