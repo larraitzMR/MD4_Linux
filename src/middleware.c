@@ -1,17 +1,17 @@
 
-#include "stuhfl.h"
-#include "stuhfl_err.h"
-#include "stuhfl_al.h"
-#include "stuhfl_sl.h"
-#include "stuhfl_sl_gen2.h"
-#include "stuhfl_sl_gb29768.h"
+#include "STUHFL/inc/stuhfl.h"
+#include "STUHFL/inc/stuhfl_err.h"
+#include "STUHFL/inc/stuhfl_al.h"
+#include "STUHFL/inc/stuhfl_sl.h"
+#include "STUHFL/inc/stuhfl_sl_gen2.h"
+#include "STUHFL/inc/stuhfl_sl_gb29768.h"
 
-#include "stuhfl_dl.h"
-#include "stuhfl_pl.h"
-#include "stuhfl_evalAPI.h"
+#include "STUHFL/inc/stuhfl_dl.h"
+#include "STUHFL/inc/stuhfl_pl.h"
+#include "STUHFL/inc/stuhfl_evalAPI.h"
 
-#include "platform/stuhfl_platform.h"
-#include "stuhfl_log.h"
+#include "STUHFL/inc/platform/stuhfl_platform.h"
+#include "STUHFL/inc/stuhfl_log.h"
 
 #include <stdlib.h>
 #include <stdio.h>
