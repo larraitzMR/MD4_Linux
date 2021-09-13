@@ -240,46 +240,41 @@ int16_t* hexadecimalToDecimal(char hexVal[], int16_t* data)
 int main(void) {
 	puts("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 	   //Servidor socket
-	    WSADATA WSAData;
-	    SOCKET server;
-	    SOCKET client;
+
+
 	    //SOCKADDR_IN  clientAddr;
-	    struct sockaddr_in clientAddr, clientAddrRead;
-	    int clientAddrSize = sizeof(clientAddr);
-	    int clientAddrSizeRead = sizeof(clientAddrRead);
-	    int retval;
-	    int conectado = 0;
+	int st_fd = 0;
+	int retval;
+	int conectado = 0;
 
-	    char msg[BUFFER_SIZE + 1];
+	char msg[BUFFER_SIZE + 1];
 
-	    STUHFL_T_DEVICE_CTX device = 0;
-	    uint8_t sndData[SND_BUFFER_SIZE];
-	    uint8_t rcvData[RCV_BUFFER_SIZE];
+	STUHFL_T_DEVICE_CTX device = 0;
+	uint8_t sndData[SND_BUFFER_SIZE];
+	uint8_t rcvData[RCV_BUFFER_SIZE];
 
-		char comPort[64];
-		// char* comPort;
-		bool r = getComPort(comPort);
-	    if (!r) {
-	        return 0;
-	    }
+	char comPort[64];
+	// char* comPort;
+	bool r = getComPort(comPort);
+	if (!r) {
+		return 0;
+	}
 
-	    STUHFL_T_RET_CODE ret = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_PORT, (STUHFL_T_PARAM_VALUE)comPort);
-	    ret |= STUHFL_F_Connect(&device, sndData, SND_BUFFER_SIZE, rcvData, RCV_BUFFER_SIZE);
+	STUHFL_T_RET_CODE ret = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_PORT, (STUHFL_T_PARAM_VALUE)comPort);
+	ret |= STUHFL_F_Connect(&device, sndData, SND_BUFFER_SIZE, rcvData, RCV_BUFFER_SIZE);
 
-	    // enable data line
-	    uint8_t on = TRUE;
-	    ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_DTR, (STUHFL_T_PARAM_VALUE)&on);
-	    // toogle reset line
-	    on = TRUE;
-	    ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_RTS, (STUHFL_T_PARAM_VALUE)&on);
-	    on = FALSE;
-	    ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_RTS, (STUHFL_T_PARAM_VALUE)&on);
+	// enable data line
+	uint8_t on = TRUE;
+	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_DTR, (STUHFL_T_PARAM_VALUE)&on);
+	// toogle reset line
+	on = TRUE;
+	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_RTS, (STUHFL_T_PARAM_VALUE)&on);
+	on = FALSE;
+	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_RTS, (STUHFL_T_PARAM_VALUE)&on);
 
-	    initParams();
+	//initParams();
 
-	    STUHFL_T_ST25RU3993_TxRxCfg txRxCfg;
-	    STUHFL_T_ST25RU3993_AntennaPower pwr;
-
+	st_fd = create_tcp_conection(5554) ;
 
 	return EXIT_SUCCESS;
 }
