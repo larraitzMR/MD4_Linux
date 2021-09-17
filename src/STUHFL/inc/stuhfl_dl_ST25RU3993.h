@@ -372,7 +372,8 @@ typedef struct {
     uint16_t    alternateAntennaInterval;       /**< I/O Param: Time in ms for alternating the antennas when alternating mode is used */
     uint8_t     rfu;                            /**< rfu */
 } STUHFL_T_ST25RU3993_TxRxCfg;
-#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1, 3}
+//#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1, 3}
+#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1000, 3}
 
 typedef struct {
     bool external;                           /**< I/O Param: Force usage of external power amplifier. If 'false' internal PA is used */

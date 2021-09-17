@@ -39,6 +39,8 @@
 #include "../inc/stuhfl_sl_gb29768.h"
 #include "../inc/stuhfl_dl.h"
 
+#include "../../inventory.h"
+
 
 #if defined(WIN32) || defined(WIN64)
 static HANDLE inventoryThread = INVALID_HANDLE_VALUE;
@@ -192,6 +194,9 @@ void* CALL_CONV_STD threadInventoryFunc(void *ptr)
             // terminate thread in case we received an not supported action
             break;
         }
+
+
+        logInventory(invData);
 
         // check for inventory data..
         ret = STUHFL_F_ReceiveCmdData((STUHFL_CG_AL << 8) | STUHFL_CC_INVENTORY_DATA, gActionCycleData);

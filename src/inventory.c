@@ -1,21 +1,20 @@
-/*
+
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable : 4996)
 
-#include "stuhfl.h"
-//#include "STUHFL/inc/stuhfl.h"
-#include "stuhfl_err.h"
-#include "stuhfl_al.h"
-#include "stuhfl_sl.h"
-#include "stuhfl_sl_gen2.h"
-#include "stuhfl_sl_gb29768.h"
+#include "STUHFL/inc/stuhfl.h"
+#include "STUHFL/inc/stuhfl_err.h"
+#include "STUHFL/inc/stuhfl_al.h"
+#include "STUHFL/inc/stuhfl_sl.h"
+#include "STUHFL/inc/stuhfl_sl_gen2.h"
+#include "STUHFL/inc/stuhfl_sl_gb29768.h"
 
-#include "stuhfl_dl.h"
-#include "stuhfl_pl.h"
-#include "stuhfl_evalAPI.h"
+#include "STUHFL/inc/stuhfl_dl.h"
+#include "STUHFL/inc/stuhfl_pl.h"
+#include "STUHFL/inc/stuhfl_evalAPI.h"
 
-#include "platform/stuhfl_platform.h"
-#include "stuhfl_log.h"
+#include "STUHFL/inc/platform/stuhfl_platform.h"
+#include "STUHFL/inc/stuhfl_log.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,7 +22,6 @@
 #include "main.h"
 #include "network.h"
 #include "inventory.h"
-
 
 static uint32_t startTickTime = 0;
 static uint32_t totalTAGs = 0;
@@ -40,10 +38,12 @@ char tidbin[4];
 
 STUHFL_T_ST25RU3993_TxRxCfg txRxCfg;
 
+
+
 //SOCKET clientRead;
 
 
-*
+/**
   * @brief      Configuration for Inventory Runner + Gen2 Inventory.
   *
   * @param[in]  singleTag:      true: single tag -> no adaptive Q +  Q = 0<br>
@@ -54,9 +54,16 @@ STUHFL_T_ST25RU3993_TxRxCfg txRxCfg;
   *                             ANTENNA_2: Using Antenna 2<br>
   *
   * @retval     None
+  * 
+  */
 
 void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
 {
+
+    STUHFL_T_ST25RU3993_TxRxCfg TxRxCfg = STUHFL_O_ST25RU3993_TXRX_CFG_INIT();          // Set to FW default values
+    TxRxCfg.alternateAntennaInterval = 100;
+    TxRxCfg.usedAntenna = (uint8_t)antenna;
+    Set_TxRxCfg(&TxRxCfg);
 
     STUHFL_T_ST25RU3993_Gen2_InventoryCfg invGen2Cfg = STUHFL_O_ST25RU3993_GEN2_INVENTORY_CFG_INIT();     // Set to FW default values
     invGen2Cfg.inventoryOption.fast = true;
@@ -83,39 +90,53 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
     Gen2Select.mode = STUHFL_D_GEN2_SELECT_MODE_CLEAR_LIST;  // Clear all Select filters
     Gen2_Select(&Gen2Select);
 
+    STUHFL_T_ST25RU3993_ChannelList         channelList = STUHFL_O_ST25RU3993_CHANNEL_LIST_INIT();
+    channelList.antenna = (uint8_t)antenna;
+    channelList.persistent = false;
+    channelList.channelListIdx = 0;
+    Set_ChannelList(&channelList);       // Nota: Profile is implicitely switched to STUHFL_D_PROFILE_NEWTUNING
+
+    channelList.antenna = STUHFL_D_ANTENNA_1;
+    Set_ChannelList(&channelList);
+    channelList.antenna = STUHFL_D_ANTENNA_2;
+    Set_ChannelList(&channelList);
+    channelList.antenna = STUHFL_D_ANTENNA_3;
+    Set_ChannelList(&channelList);
+    channelList.antenna = STUHFL_D_ANTENNA_4;
+    Set_ChannelList(&channelList);
 
     // printf("Tuning Profile frequencies: algo: TUNING_ALGO_SLOW\n");
 
 // Get freq profile + number of frequencies
-        STUHFL_T_ST25RU3993_FreqProfileInfo   freqProfileInfo = STUHFL_O_ST25RU3993_FREQ_PROFILE_INFO_INIT();
-        Get_FreqProfileInfo(&freqProfileInfo);
+    STUHFL_T_ST25RU3993_FreqProfileInfo   freqProfileInfo = STUHFL_O_ST25RU3993_FREQ_PROFILE_INFO_INIT();
+    Get_FreqProfileInfo(&freqProfileInfo);
 
-        // Tune for each freq
-        for (uint8_t i=0 ; i<freqProfileInfo.numFrequencies ; i++) {
-            STUHFL_T_ST25RU3993_TuningTableEntry    tuningTableEntry = STUHFL_O_ST25RU3993_TUNING_TABLE_ENTRY_INIT();
-            STUHFL_T_ST25RU3993_AntennaPower       antPwr = STUHFL_O_ST25RU3993_ANTENNA_POWER_INIT();
-            STUHFL_T_ST25RU3993_Tune                tune = STUHFL_O_ST25RU3993_TUNE_INIT();
+    // Tune for each freq
+    for (uint8_t i=0 ; i<freqProfileInfo.numFrequencies ; i++) {
+        STUHFL_T_ST25RU3993_TuningTableEntry    tuningTableEntry = STUHFL_O_ST25RU3993_TUNING_TABLE_ENTRY_INIT();
+        STUHFL_T_ST25RU3993_AntennaPower       antPwr = STUHFL_O_ST25RU3993_ANTENNA_POWER_INIT();
+        STUHFL_T_ST25RU3993_Tune                tune = STUHFL_O_ST25RU3993_TUNE_INIT();
 
-            tuningTableEntry.entry = i;
-            Get_TuningTableEntry(&tuningTableEntry);               // Retrieve frequency related to this entry
+        tuningTableEntry.entry = i;
+        Get_TuningTableEntry(&tuningTableEntry);               // Retrieve frequency related to this entry
 
-            tuningTableEntry.entry = i;
-            memset(tuningTableEntry.applyCapValues, false, STUHFL_D_MAX_ANTENNA);    // Do not apply caps, only set entry
-            Set_TuningTableEntry(&tuningTableEntry);
+        tuningTableEntry.entry = i;
+        memset(tuningTableEntry.applyCapValues, false, STUHFL_D_MAX_ANTENNA);    // Do not apply caps, only set entry
+        Set_TuningTableEntry(&tuningTableEntry);
 
-            antPwr.mode = STUHFL_D_ANTENNA_POWER_MODE_ON;
-            antPwr.timeout = 0;
-            antPwr.frequency = tuningTableEntry.freq;
-            Set_AntennaPower(&antPwr);
+        antPwr.mode = STUHFL_D_ANTENNA_POWER_MODE_ON;
+        antPwr.timeout = 0;
+        antPwr.frequency = tuningTableEntry.freq;
+        Set_AntennaPower(&antPwr);
 
-            tune.algo = STUHFL_D_TUNING_ALGO_SLOW;
-            Tune(&tune);
+        tune.algo = STUHFL_D_TUNING_ALGO_SLOW;
+        Tune(&tune);
 
-            antPwr.mode = STUHFL_D_ANTENNA_POWER_MODE_OFF;
-            antPwr.timeout = 0;
-            antPwr.frequency = tuningTableEntry.freq;
-            Set_AntennaPower(&antPwr);
-        }
+        antPwr.mode = STUHFL_D_ANTENNA_POWER_MODE_OFF;
+        antPwr.timeout = 0;
+        antPwr.frequency = tuningTableEntry.freq;
+        Set_AntennaPower(&antPwr);
+    }
 }
 
 //SOCKET clientRead;
@@ -127,7 +148,7 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
 // }
 
 
-*
+/**
   * @brief      Inventory Runner run call back.
   *
   * @param[in]  data: Gen2 Inventory data
@@ -135,9 +156,11 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
   * @retval     STUHFL_ERR_NONE: No error happened
   * @retval     otherwise: An error occurred
   *
+  */
 
 STUHFL_T_RET_CODE inventoryRunner(STUHFL_T_InventoryData* data)
 {
+
     static uint32_t localCycleTime = 0;
     uint32_t millis = getMilliCount();
 
@@ -174,7 +197,7 @@ STUHFL_T_RET_CODE inventoryRunner(STUHFL_T_InventoryData* data)
     return STUHFL_ERR_NONE;
 }
 
-*
+/**
   * @brief      Inventory Runner end call back.
   *
   * @param[in]  data: Gen2 Inventory data
@@ -182,21 +205,22 @@ STUHFL_T_RET_CODE inventoryRunner(STUHFL_T_InventoryData* data)
   * @retval     STUHFL_ERR_NONE: No error happened
   * @retval     otherwise: An error occurred
   *
+  */
 
 static STUHFL_T_RET_CODE inventoryRunnerEndCallBack(STUHFL_T_InventoryData* cycleData)
 {
-    log2Screen(false, true, "    Inventory stopped after %d cycles\n    Processing Inventory end ...\n", cycleData->statistics.roundCnt);
+    //log2Screen(false, true, "    Inventory stopped after %d cycles\n    Processing Inventory end ...\n", cycleData->statistics.roundCnt);
     return STUHFL_ERR_NONE;
 }
 
 
-*
+/**
   * @brief      Get Rwd registers demo
   *
   * @param      None
   *
   * @retval     None
-
+  */
 int readRegister(int regNumb)
 {
     // read register (one by one)
@@ -207,33 +231,6 @@ int readRegister(int regNumb)
     Get_Register(&reg);
 
     return reg.data;
-}
-
-char* decimal_to_binary(int n)
-{
-    int c, d, t;
-    char* p;
-
-    t = 0;
-    p = (char*)malloc(32 + 1);
-
-    if (p == NULL)
-        exit(EXIT_FAILURE);
-
-    for (c = 7; c >= 0; c--)
-    {
-        d = n >> c;
-
-        if (d & 1)
-            *(p + t) = 1 + '0';
-        else
-            *(p + t) = 0 + '0';
-
-        t++;
-    }
-    *(p + t) = '\0';
-
-    return  p;
 }
 
 float calculateRSSI(int rssiLogI, int rssiLogQ)
@@ -288,6 +285,8 @@ float calculateRSSI(int rssiLogI, int rssiLogQ)
 
 void logInventory(STUHFL_T_ActionCycleData data)
 {
+
+   // printf("LOG INVENTORY\n");
     STUHFL_T_InventoryData* invData = ((STUHFL_T_InventoryData*)data);
     //uint32_t duration = (invData->tagListSize ? invData->tagList[0].timestamp : invData->statistics.timestamp) - startTickTime;
     //readRate = duration ? ((float)totalTAGs * ((float)1000.0 / (float)duration)) : (float)0.0;
@@ -320,13 +319,13 @@ void logInventory(STUHFL_T_ActionCycleData data)
             sprintf(mensaje, "$%s,%u,%f#", epc, usedAntena, rssi);
             printf("tag para enviar: %s\n", mensaje);
             memset(epc, 0, sizeof(epc));
-//            send(clientRead, mensaje, strlen(mensaje), 0);
+            send_tcp_message(mensaje);
             memset(mensaje, 0, sizeof(mensaje));
         }
     }
 }
 
-*
+/**
   * @brief      Gen2 Select demo.<br>
   *             Set and launch Select
   *
@@ -334,6 +333,7 @@ void logInventory(STUHFL_T_ActionCycleData data)
   * @param[in]  epcLen: tag EPC length
   *
   * @retval     None
+  */
 
 void selectTag(uint8_t* epc, uint8_t epcLen)
 {
@@ -359,15 +359,14 @@ void selectTag(uint8_t* epc, uint8_t epcLen)
     printf("\n");
 }
 
-
-*
+/**
   * @brief      Gen2 Read demo.<br>
   *             Read 16 bytes from user memory bank on a pre-selected tag and outputs data
   *
   * @param[out] data: buffer data
   *
   * @retval     None
-
+  */
 void demo_gen2Read(uint8_t* data)
 {
     STUHFL_T_Read readData = STUHFL_O_READ_INIT();
@@ -498,4 +497,4 @@ void writeTagData(uint16_t epc[6]) {
         printf("\nTag cannot be written\n");
     }
 }
-*/
+

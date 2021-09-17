@@ -19,8 +19,6 @@
 #include "main.h"
 #include "middleware.h"
 
-
-
  
 
 //
@@ -71,4 +69,108 @@ void string2hexString(char* input, char* output)
     }
     //insert NULL at the end of the output string
     output[i++] = '\0';
+}
+
+int16_t* hexadecimalToDecimal(char hexVal[], int16_t* data)
+{
+    int len = 24;
+
+    // Initializing base value to 1, i.e 16^0
+    int base = 1;
+    int cont = 0;
+    int write = 0;
+
+    int dec_val = 0;
+    int16_t writeData[6];
+    int i = 0;
+    // Extracting characters as digits from last character
+    while (i < len - 1)
+        //for (int i = 0; i < len; i++)
+        //for (int i = len - 1; i >= 0; i--)
+    {
+        // if character lies in '0'-'9', converting
+        // it to integral 0-9 by subtracting 48 from
+        // ASCII value.
+        if (hexVal[i + 1] >= '0' && hexVal[i + 1] <= '9')
+        {
+            dec_val += (hexVal[i + 1] - 48) * base;
+
+            // incrementing base by power
+            base = base * 16;
+        }
+
+        // if character lies in 'A'-'F' , converting
+        // it to integral 10 - 15 by subtracting 55
+        // from ASCII value
+        else if (hexVal[i + 1] >= 'A' && hexVal[i + 1] <= 'F')
+        {
+            dec_val += (hexVal[i + 1] - 55) * base;
+
+            // incrementing base by power
+            base = base * 16;
+        }
+        cont++;
+        // if character lies in '0'-'9', converting
+        // it to integral 0-9 by subtracting 48 from
+        // ASCII value.
+        if (hexVal[i] >= '0' && hexVal[i] <= '9')
+        {
+            dec_val += (hexVal[i] - 48) * base;
+
+            // incrementing base by power
+            base = base * 16;
+        }
+
+        // if character lies in 'A'-'F' , converting
+        // it to integral 10 - 15 by subtracting 55
+        // from ASCII value
+        else if (hexVal[i] >= 'A' && hexVal[i] <= 'F')
+        {
+            dec_val += (hexVal[i] - 55) * base;
+
+            // incrementing base by power
+            base = base * 16;
+        }
+        cont++;
+        i++;
+        i++;
+        if (cont == 4) {
+            writeData[write] = dec_val;
+            data[write] = dec_val;
+            write++;
+            cont = 0;
+            dec_val = 0;
+            base = 1;
+        }
+
+    }
+    //data = writeData;
+    return data;
+}
+
+char* decimal_to_binary(int n)
+{
+    int c, d, t;
+    char* p;
+
+    t = 0;
+    p = (char*)malloc(32 + 1);
+
+    if (p == NULL)
+        exit(EXIT_FAILURE);
+
+    for (c = 7; c >= 0; c--)
+    {
+        d = n >> c;
+
+        if (d & 1)
+            *(p + t) = 1 + '0';
+        else
+            *(p + t) = 0 + '0';
+
+        t++;
+    }
+    *(p + t) = '\0';
+
+    return  p;
 }

@@ -38,6 +38,8 @@ struct sockaddr_in  local_Address;
 
 int create_tcp_conection(int portNum) {
 
+	printf("Creating connection\n");
+
 	address_len = sizeof(local_Address);
 
 	memset(&local_Address,0x00,sizeof(local_Address));
