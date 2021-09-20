@@ -59,6 +59,10 @@ char mensaje[60];
 char tid[24];
 int startReading = 0;
 
+
+//Variables globales
+int clientRead;
+int clientTagRead;
 static pthread_t inventoryT = INVALID_HANDLE_VALUE;
 
 
@@ -92,6 +96,11 @@ static bool getComPort(char* szPort)
     return true;
 }
 
+int getSocketState()
+{
+    return clientRead;
+}
+
 
 void initParams() {
 
@@ -103,12 +112,14 @@ void initParams() {
     Set_AntennaSequence(&ant);
     Set_Gen2_InventoryCfg(&invGen2Cfg);
     txRxCfg.usedAntenna = STUHFL_D_ANTENNA_ALT;
+    txRxCfg.txOutputLevel = 5;
     //printf("Antenna power: %d, Antenna sensitivity: %d\n",pwr.mode, txRxCfg.rxSensitivity);
     Set_TxRxCfg(&txRxCfg);
+    printf("Set_TxRxCfg (txOutputLevel: %d, rxSensitivity: %d, usedAntenna: %d, alternateAntennaInterval: %d)\n", txRxCfg.txOutputLevel, txRxCfg.rxSensitivity, txRxCfg.usedAntenna, txRxCfg.alternateAntennaInterval);
 }
 
 
-void* CALL_CONV_STD runInventory() {
+void* runInventory() {
 
     printf("RUNNING INVENTORY\n");
     txRxCfg.usedAntenna = STUHFL_D_ANTENNA_ALT;
@@ -135,7 +146,7 @@ void* CALL_CONV_STD runInventory() {
     Inventory_RunnerStart(&invOption, inventoryRunner, NULL, &cycleData);
 }
 
-void* CALL_CONV_STD stopInventory() {
+void* stopInventory() {
     Inventory_RunnerStop();
 }
 
@@ -147,6 +158,8 @@ int main(void) {
 
 	    //SOCKADDR_IN  clientAddr;
 	int st_fd = 0;
+    int client = 0;
+    int reading_fd = 0;
 	int retval;
 	int conectado = 0;
 
@@ -166,8 +179,6 @@ int main(void) {
 	STUHFL_T_RET_CODE ret = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_PORT, (STUHFL_T_PARAM_VALUE)comPort);
 	ret |= STUHFL_F_Connect(&device, sndData, SND_BUFFER_SIZE, rcvData, RCV_BUFFER_SIZE);
 
-    printf("CONNECTED\n");
-
 	// enable data line
 	uint8_t on = TRUE;
 	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_DTR, (STUHFL_T_PARAM_VALUE)&on);
@@ -180,17 +191,21 @@ int main(void) {
 	initParams();
 
     st_fd = create_tcp_conection(5557) ;
-    if(st_fd > 1){
-          printf("Cliente conectado: %d\n", st_fd);
-          conectado = 1;
+
+    /* Esperar la petición del cliente. */
+    if((client = accept(st_fd,(struct sockaddr*)NULL, 0))>0)
+    {
+        printf("Cliente conectado: %d\n", client);
+         conectado = 1;
     }
+
 
   
     while (conectado == 1) {
 
         memset(msg, '\0', BUFFER_SIZE + 1);
         fflush(stdout);
-        read_tcp_message(msg);
+        read_tcp_message(msg, client);
         char* mens = strtok(msg, "#");
         sprintf(msg, "%s", mens);
        // printf("%s\n", msg);
@@ -198,7 +213,7 @@ int main(void) {
         if (strncmp(msg, "DISCONNECT", 10) == 0) {
             printf("msg: %s\n", msg);
             conectado = 0;
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         if (strncmp(msg, "POWER_MINMAX", 12) == 0)
         {
@@ -215,7 +230,7 @@ int main(void) {
             sprintf(pow, "%d#", txRxCfg.txOutputLevel);
            // sprintf(pow, "%.1f#", txRxCfg.txOutputLevel);
 
-            send_tcp_message(pow);
+            send_tcp_message(pow, client);
         }
         else if (strncmp(msg, "SET_POWER", 9) == 0) {
             printf("msg: %s\n", msg);
@@ -232,7 +247,7 @@ int main(void) {
             txRxCfg.txOutputLevel = value;
             Set_TxRxCfg(&txRxCfg);
 
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "GET_SEL_ANT", 11) == 0) {
             printf("msg: %s\n", msg);
@@ -243,7 +258,7 @@ int main(void) {
             Get_AntennaSequence(&antenasConectadas);
             sprintf(selAntSend, "%u,%u,%u,%u#", antenasConectadas.antenna1, antenasConectadas.antenna2, antenasConectadas.antenna3, antenasConectadas.antenna4);
             printf("Selected antenas: %s\n", selAntSend);
-            send_tcp_message(selAntSend);
+            send_tcp_message(selAntSend, client);
         }
         else if (strncmp(msg, "SET_SEL_ANT", 11) == 0) {
             printf("msg: %s\n", msg);
@@ -277,20 +292,22 @@ int main(void) {
             }
 
             Set_AntennaSequence(&arrayConectadas);
-
+           // printf("Set_AntennaSequence, y conectadas %dn", conectadas);
             STUHFL_T_ST25RU3993_AntennaPower pwr = STUHFL_O_ST25RU3993_ANTENNA_POWER_INIT();
             if (conectadas > 1) {
+              //  printf("MAS DE UNA ANTENA CONECTADA");
                 txRxCfg.usedAntenna = STUHFL_D_ANTENNA_ALT;
                 Set_TxRxCfg(&txRxCfg);
             }
             else if (conectadas == 1) {
+              //  printf("SOLO UNA ANTENA");
                 txRxCfg.usedAntenna = antenaConectada;
                 Set_TxRxCfg(&txRxCfg);
                 Get_AntennaPower(&pwr);
                 pwr.mode = STUHFL_D_ANTENNA_POWER_MODE_ON;
                 Set_AntennaPower(&pwr);
             }
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "GET_INFO", 8) == 0) {
             printf("msg: %s\n", msg);
@@ -301,7 +318,7 @@ int main(void) {
             sprintf(info, "%d.%d,%d.%d,%s,%s#", swVer.major, swVer.minor, hwVer.major, hwVer.minor, swInfo.info, hwInfo.info);
 
             printf("info: %s\n", info);
-            send_tcp_message(info);
+            send_tcp_message(info, client);
             memset(info, 0, sizeof(info));
         }
         else if (strncmp(msg, "GET_ADV_OPT", 11) == 0) {
@@ -318,7 +335,7 @@ int main(void) {
             fflush(stdout);
             sprintf(optionSend, "%d,%d,%d,%d,%d,%d,%d#", freqProfile.profile, gen2ProtocolCfg.tari, gen2ProtocolCfg.blf, gen2ProtocolCfg.coding, invGen2Cfg.antiCollision.startQ, invGen2Cfg.queryParams.session, invGen2Cfg.queryParams.target);
             printf("Option: %s\n", optionSend);
-            send_tcp_message(optionSend);
+            send_tcp_message(optionSend, client);
             memset(optionSend, 0, sizeof(optionSend));
         }
         else if (strncmp(msg, "SET_REGION", 10) == 0) {
@@ -355,7 +372,7 @@ int main(void) {
                 break;
             }
             Set_FreqProfile(&freqProfile);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "SET_TARI", 8) == 0) {
             printf("msg: %s\n", msg);
@@ -386,8 +403,7 @@ int main(void) {
 
             Set_Gen2_ProtocolCfg(&gen2ProtocolCfg);
             fflush(stdout);
-            send_tcp_message("OK#");
-
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "SET_BLF", 7) == 0) {
             printf("msg: %s\n", msg);
@@ -430,7 +446,7 @@ int main(void) {
 
             Set_Gen2_ProtocolCfg(&gen2ProtocolCfg);
             fflush(stdout);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "SET_M", 5) == 0) {
             printf("msg: %s\n", msg);
@@ -465,7 +481,7 @@ int main(void) {
 
             Set_Gen2_ProtocolCfg(&gen2ProtocolCfg);
             fflush(stdout);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "SET_Q", 5) == 0) {
             printf("msg: %s\n", msg);
@@ -476,7 +492,7 @@ int main(void) {
             invGen2Cfg.antiCollision.startQ = q;
             Set_Gen2_InventoryCfg(&invGen2Cfg);
             fflush(stdout);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
 
         }
         else if (strncmp(msg, "SET_SESSION", 11) == 0) {
@@ -512,7 +528,7 @@ int main(void) {
 
             Set_Gen2_InventoryCfg(&invGen2Cfg);
             fflush(stdout);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "SET_TARGET", 10) == 0) {
             printf("msg: %s\n", msg);
@@ -539,43 +555,38 @@ int main(void) {
             Set_Gen2_InventoryCfg(&invGen2Cfg);
             fflush(stdout);
 
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
         }
         else if (strncmp(msg, "START_READING", 13) == 0) {
 
             printf("msg: %s\n", msg);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
 
-        
-            st_fd = create_tcp_conection(5556) ;
-            if(st_fd > 1){
-                  printf("Cliente conectado: %d\n", st_fd);
-                  conectado = 1;
+            st_fd = create_tcp_conection(5556);
+
+            /* Esperar la petición del cliente. */
+            if((clientRead = accept(st_fd,(struct sockaddr*)NULL, 0))>0)
+            {
+                printf("Cliente conectado: %d\n", client);
+                //setSocket(clientRead);
+            } else{
+                 perror(NULL);
             }
 
             if (pthread_create(&inventoryT, NULL, runInventory, NULL)) {
                 inventoryT = INVALID_HANDLE_VALUE;
             }
-
-            // server = configure_tcp_socket(5556);
-            // if ((clientRead = accept(server, (struct sockaddr*)&clientAddrRead, &clientAddrSizeRead)) != INVALID_SOCKET)
-            // {
-            //     printf("Conectado para enviar tags!\n");
-            //     setSocket(clientRead);
-            // }
-
-            // HANDLE thread = CreateThread(NULL, 0, runInventory, clientRead, 0, NULL);
-
         }
         else if (strncmp(msg, "STOP_READING", 13) == 0) {
             printf("msg: %s\n", msg);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
 
             if (pthread_create(&inventoryT, NULL, stopInventory, NULL)) {
                 inventoryT = INVALID_HANDLE_VALUE;
             }
 
-            close_tcp_connection();
+            close(st_fd);
+
 
             // HANDLE thread = CreateThread(NULL, 0, stopInventory, clientRead, 0, NULL);
             //  send_tcp_message("OK#");
@@ -584,7 +595,7 @@ int main(void) {
         }
         else if (strncmp(msg, "READ_INFO", 9) == 0) {
             printf("msg: %s\n", msg);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
 
             // startReading = 1;
 
@@ -635,7 +646,7 @@ int main(void) {
            // // writeTagData(EPCBuf);
            //  writeTagData(writeEPC);
            //  //HANDLE thread = CreateThread(NULL, 0, writeTagData, writeEPC, 0, NULL);
-            send_tcp_message("OK#");
+            send_tcp_message("OK#", client);
 
         }
     }

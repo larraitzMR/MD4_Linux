@@ -1,13 +1,7 @@
 /******************************************************************************
-  * \attention
+  * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2021 STMicroelectronics</center></h2>
-  *
-  * Licensed under ST MYLIBERTY SOFTWARE LICENSE AGREEMENT (the "License");
-  * You may not use this file except in compliance with the License.
-  * You may obtain a copy of the License at:
-  *
-  *        www.st.com/myliberty
+  * COPYRIGHT 2019 STMicroelectronics, all rights reserved
   *
   * Unless required by applicable law or agreed to in writing, software
   * distributed under the License is distributed on an "AS IS" BASIS,
@@ -372,8 +366,8 @@ typedef struct {
     uint16_t    alternateAntennaInterval;       /**< I/O Param: Time in ms for alternating the antennas when alternating mode is used */
     uint8_t     rfu;                            /**< rfu */
 } STUHFL_T_ST25RU3993_TxRxCfg;
-//#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1, 3}
-#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1000, 3}
+#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1, 3}
+//#define STUHFL_O_ST25RU3993_TXRX_CFG_INIT()      {-2, 3, STUHFL_D_ANTENNA_1, 1000, 3}
 
 typedef struct {
     bool external;                           /**< I/O Param: Force usage of external power amplifier. If 'false' internal PA is used */

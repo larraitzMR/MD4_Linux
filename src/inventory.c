@@ -295,6 +295,8 @@ void logInventory(STUHFL_T_ActionCycleData data)
     //}
 //    SOCKET clientRead = getSocketState();
 
+    int clientRead = getSocketState();
+
     memset(epc, 0, sizeof(epc));
     memset(mensaje, 0, sizeof(mensaje));
     int rssiLogI = 0;
@@ -319,7 +321,7 @@ void logInventory(STUHFL_T_ActionCycleData data)
             sprintf(mensaje, "$%s,%u,%f#", epc, usedAntena, rssi);
             printf("tag para enviar: %s\n", mensaje);
             memset(epc, 0, sizeof(epc));
-            send_tcp_message(mensaje);
+            send_tcp_message(mensaje, clientRead);
             memset(mensaje, 0, sizeof(mensaje));
         }
     }

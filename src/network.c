@@ -29,16 +29,15 @@ struct sockaddr_in local_socket; //Configuration for local socket
  */
 
 int    server;
-int    client;
 int    address_len;
 int    sendrc;
 int    bndrc;
 char*  greeting;
 struct sockaddr_in  local_Address;
 
-int create_tcp_conection(int portNum) {
+int true = 1;
 
-	printf("Creating connection\n");
+int create_tcp_conection(int portNum) {
 
 	address_len = sizeof(local_Address);
 
@@ -47,16 +46,18 @@ int create_tcp_conection(int portNum) {
 	local_Address.sin_port = htons(portNum);
 	local_Address.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	#pragma convert (819)
-	greeting = "Este es un mensaje del servidor de sockets C.";
-	#pragma convert (0)
-
 	/*  Asignar el socket.  */
 	if((server = socket(AF_INET, SOCK_STREAM, 0))<0)
 	{
 	  printf("anomalía en la asignación de socket\n");
 	  perror(NULL);
 	  exit(-1);
+	}
+
+	if (setsockopt(server,SOL_SOCKET,SO_REUSEADDR,&true,sizeof(int)) == -1)
+	{
+	    perror("Setsockopt");
+	    exit(1);
 	}
 
 	/* Realizar el enlace (bind). */
@@ -70,24 +71,16 @@ int create_tcp_conection(int portNum) {
 	/* Invocar el método listen. */
 	listen(server, 1);
 
-	/* Esperar la petición del cliente. */
-	if((client = accept(server,(struct sockaddr*)NULL, 0))<0)
-	{
-	 printf("aceptar ha fallado\n");
-	 perror(NULL);
-	 exit(-1);
-	} else {
-		printf("Cliente recibido\n");
-	}
 	return server;
 }
 
-void close_tcp_connection(){
+void close_tcp_connection(int client){
 	close(server);
 	close(client);
+
 }
 
-void send_tcp_message(char *data){
+void send_tcp_message(char *data, int client){
 
 	/* Envía un saludo (greeting) al cliente. */
 	//if((sendrc =  write(client, data, sizeof(data)))<0)
@@ -99,7 +92,7 @@ void send_tcp_message(char *data){
 	}
 }
 
-void read_tcp_message(char *buffer) {
+void read_tcp_message(char *buffer, int client) {
 	int n = 0;
 	//char buffer[256];
 

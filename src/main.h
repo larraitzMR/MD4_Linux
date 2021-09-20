@@ -31,6 +31,9 @@ extern "C"
 {
 #endif //__cplusplus
 
+
+    int getSocketState();
+
     // --------------------------------------------------------------------------
     // screen logging
     void log2Screen(bool clearScreen, bool flush, const char* format, ...);
