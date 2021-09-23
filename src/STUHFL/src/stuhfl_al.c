@@ -192,11 +192,9 @@ void* CALL_CONV_STD threadInventoryFunc(void *ptr)
 
         if (invData == NULL) {
             // terminate thread in case we received an not supported action
+            printf("InvData == NULL");
             break;
         }
-
-
-        logInventory(invData);
 
         // check for inventory data..
         ret = STUHFL_F_ReceiveCmdData((STUHFL_CG_AL << 8) | STUHFL_CC_INVENTORY_DATA, gActionCycleData);
@@ -208,6 +206,8 @@ void* CALL_CONV_STD threadInventoryFunc(void *ptr)
                 gActionCycleCallbackOOP(gCallerCtxPointer, gActionCycleData);
             }
         }
+
+        logInventory(invData);
 
         // clear counters to be prepared for next cycle
         if (invData) { invData->tagListSize = 0; }

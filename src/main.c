@@ -105,17 +105,17 @@ int getSocketState()
 void initParams() {
 
     setupGen2Config(false, true, STUHFL_D_ANTENNA_1);
-    setupGen2Config(false, true, STUHFL_D_ANTENNA_2);
-    setupGen2Config(false, true, STUHFL_D_ANTENNA_3);
-    setupGen2Config(false, true, STUHFL_D_ANTENNA_4);
+//    setupGen2Config(false, true, STUHFL_D_ANTENNA_2);
+//    setupGen2Config(false, true, STUHFL_D_ANTENNA_3);
+//    setupGen2Config(false, true, STUHFL_D_ANTENNA_4);
     STUHFL_T_ST25RU3993_AntennaSequence ant = STUHFL_O_ST25RU3993_ANTENNA_SEQUENCE_INIT();
     Set_AntennaSequence(&ant);
     Set_Gen2_InventoryCfg(&invGen2Cfg);
     txRxCfg.usedAntenna = STUHFL_D_ANTENNA_ALT;
-    txRxCfg.txOutputLevel = 5;
+    txRxCfg.txOutputLevel = 5.0;
     //printf("Antenna power: %d, Antenna sensitivity: %d\n",pwr.mode, txRxCfg.rxSensitivity);
     Set_TxRxCfg(&txRxCfg);
-    printf("Set_TxRxCfg (txOutputLevel: %d, rxSensitivity: %d, usedAntenna: %d, alternateAntennaInterval: %d)\n", txRxCfg.txOutputLevel, txRxCfg.rxSensitivity, txRxCfg.usedAntenna, txRxCfg.alternateAntennaInterval);
+   // printf("Set_TxRxCfg (txOutputLevel: %.2f, rxSensitivity: %d, usedAntenna: %d, alternateAntennaInterval: %d)\n", txRxCfg.txOutputLevel, txRxCfg.rxSensitivity, txRxCfg.usedAntenna, txRxCfg.alternateAntennaInterval);
 }
 
 
@@ -150,6 +150,88 @@ void* stopInventory() {
     Inventory_RunnerStop();
 }
 
+void* readTagData(void *arg) {
+
+    printf("Argumento readTagData: %d\n", (int8_t *)arg);
+
+    memset(epc, 0, sizeof(epc));
+
+    STUHFL_T_ST25RU3993_Gen2_InventoryCfg invGen2Cfg = STUHFL_O_ST25RU3993_GEN2_INVENTORY_CFG_INIT();     // Set to FW default values
+    invGen2Cfg.inventoryOption.readTID = true;
+    invGen2Cfg.inventoryOption.autoAck = false;
+    Set_Gen2_InventoryCfg(&invGen2Cfg);
+
+    // STUHFL_T_ST25RU3993_TxRx_Cfg TxRxCfg = STUHFL_O_ST25RU3993_TXRX_CFG_INIT();
+    txRxCfg.usedAntenna = STUHFL_D_ANTENNA_1;
+    Set_TxRxCfg(&txRxCfg);
+
+    STUHFL_T_Gen2_Select    Gen2Select = STUHFL_O_GEN2_SELECT_INIT();                        // Set to FW default values
+    Gen2Select.mode = STUHFL_D_GEN2_SELECT_MODE_CLEAR_LIST;  // Clear all Select filters
+    Gen2_Select(&Gen2Select);
+
+
+    // apply data storage location, where the found TAGs shall be stored
+    STUHFL_T_InventoryTag tagData[1] = { STUHFL_O_INVENTORY_TAG_INIT() };
+
+    STUHFL_T_InventoryData invData = STUHFL_O_INVENTORY_DATA_INIT();
+    invData.tagList = tagData;
+    invData.tagListSizeMax = 1;
+
+    STUHFL_T_InventoryOption invOption = STUHFL_O_INVENTORY_OPTION_INIT();  // Init with default values
+
+    while (startReading == 1) {
+
+        Gen2_Inventory(&invOption, &invData);
+
+        if (invData.tagListSize) {
+
+            selectTag(invData.tagList[0].epc.data, invData.tagList[0].epc.length);
+
+            STUHFL_T_Read readData = STUHFL_O_READ_INIT();
+
+            readData.memoryBank = STUHFL_D_GEN2_MEMORY_BANK_EPC;
+            readData.wordPtr = 0;
+            readData.numBytesToRead = STUHFL_D_MAX_READ_DATA_LEN;
+            memset(readData.pwd, 0, 4);
+
+            if (Gen2_Read(&readData) == STUHFL_ERR_NONE) {
+                printf("Read data: ");
+                for (int i = 0; i < readData.numReadBytes; i++) {
+                    //printf("%02x", readData.data[i]);    
+                    sprintf(epcbin, "%02x", readData.data[i]);
+                    strcat(epc, epcbin);
+                }
+            } 
+            else {
+                printf("NO SE PUEDE LEER");
+            }
+            
+            printf("\n");
+            //for (int i = 0; i < invData.tagList[0].epc.len; i++) {
+            //    sprintf(epcbin, "%02x", invData.tagList[0].epc.data[i]);
+            //    strcat(epc, epcbin);
+            //}
+            memset(epcbin, 0, sizeof(epcbin));
+            for (int i = 0; i < invData.tagList[0].tid.length; i++) {
+                sprintf(tidbin, "%02x", invData.tagList[0].tid.data[i]);
+                strcat(tid, tidbin);
+            }
+            printf("epc: %s\n", epc);
+            sprintf(mensaje, "$%s %s#", epc, tid);
+            printf("tag para enviar: %s\n", mensaje);
+
+            send_tcp_message(mensaje, (int8_t *)arg);;
+            memset(epc, 0, sizeof(epc));
+            memset(tid, 0, sizeof(tid));
+
+            startReading = 0;
+            memset(mensaje, 0, strlen(mensaje));
+        }
+    }
+    return 0;
+}
+
+
 
 int main(void) {
 	//printf("!!!Hello World!!!"); /* prints !!!Hello World!!! */
@@ -178,6 +260,10 @@ int main(void) {
 
 	STUHFL_T_RET_CODE ret = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_PORT, (STUHFL_T_PARAM_VALUE)comPort);
 	ret |= STUHFL_F_Connect(&device, sndData, SND_BUFFER_SIZE, rcvData, RCV_BUFFER_SIZE);
+    if(ret != 0){
+        printf("No se puede conectar con el módulo %d\n", ret);
+        return 0;
+    }
 
 	// enable data line
 	uint8_t on = TRUE;
@@ -199,8 +285,6 @@ int main(void) {
          conectado = 1;
     }
 
-
-  
     while (conectado == 1) {
 
         memset(msg, '\0', BUFFER_SIZE + 1);
@@ -221,14 +305,15 @@ int main(void) {
         }
         else if (strncmp(msg, "GET_POWER", 9) == 0) {
             printf("msg: %s\n", msg);
-            char pow[6] = "";
+            char pow[7] = "";
             // Get current antenna
             Get_TxRxCfg(&txRxCfg); 
             
            // printf("outputLevel: %.1f antenna: %d\n", txRxCfg.txOutputLevel, txRxCfg.usedAntenna);
-            //sprintf(pow, "%.1f#", txRxCfg.txOutputLevel);
-            sprintf(pow, "%d#", txRxCfg.txOutputLevel);
+            //sprintf(pow, "%.1f#", txRxCfg.txOutputLevel)
+            sprintf(pow, "%.2f#", txRxCfg.txOutputLevel);
            // sprintf(pow, "%.1f#", txRxCfg.txOutputLevel);
+            printf("Get Power: %s\n", pow);
 
             send_tcp_message(pow, client);
         }
@@ -239,10 +324,10 @@ int main(void) {
             
             float value = atof(pow);
 
-            STUHFL_T_ST25RU3993_AntennaPower pwr = STUHFL_O_ST25RU3993_ANTENNA_POWER_INIT();
+            //STUHFL_T_ST25RU3993_AntennaPower pwr = STUHFL_O_ST25RU3993_ANTENNA_POWER_INIT();
             //printf("Antenna power: %d, Antenna sensitivity: %.1f\n", pwr.mode, txRxCfg.txOutputLevel);
-            printf("Antenna power: %d, Antenna sensitivity: %d\n", pwr.mode, txRxCfg.txOutputLevel);
-            printf("RECIBIDO POWER: %.1f\n", value);
+           // printf("Antenna power: %d, Antenna sensitivity: %d\n", pwr.mode, txRxCfg.txOutputLevel);
+            printf("RECIBIDO POWER: %.2f\n", value);
 
             txRxCfg.txOutputLevel = value;
             Set_TxRxCfg(&txRxCfg);
@@ -567,7 +652,7 @@ int main(void) {
             /* Esperar la petición del cliente. */
             if((clientRead = accept(st_fd,(struct sockaddr*)NULL, 0))>0)
             {
-                printf("Cliente conectado: %d\n", client);
+                printf("Cliente conectado: %d\n", clientRead);
                 //setSocket(clientRead);
             } else{
                  perror(NULL);
@@ -597,55 +682,51 @@ int main(void) {
             printf("msg: %s\n", msg);
             send_tcp_message("OK#", client);
 
-            // startReading = 1;
+            startReading = 1;
 
-            // server = configure_tcp_socket(5556);
-            // if ((clientRead = accept(server, (struct sockaddr*)&clientAddrRead, &clientAddrSizeRead)) != INVALID_SOCKET)
-            // {
-            //     printf("Conectado para enviar tags!\n");
-            //     setSocket(clientRead);
-            // }
+            st_fd = create_tcp_conection(5556);
 
-            // HANDLE thread = CreateThread(NULL, 0, readTagData, clientRead, 0, NULL);
+            /* Esperar la petición del cliente. */
+            if((clientRead = accept(st_fd,(struct sockaddr*)NULL, 0))>0)
+            {
+                printf("Cliente conectado: %d\n", clientRead);
+                //setSocket(clientRead);
+            } else{
+                 perror(NULL);
+            }
+
+            if (pthread_create(&inventoryT, NULL, readTagData, (void *)clientRead)) {
+                inventoryT = INVALID_HANDLE_VALUE;
+            }
 
         }
         else if (strncmp(msg, "WRITE_EPC", 9) == 0) {
             printf("msg: %s\n", msg);
-           //  char EPCBuf[48];
-           //  char EPC1Buf[16];
-           //  char EPC2Buf[16];
-           //  char EPC3Buf[16];
-           //  uint16_t writeEPC[6];
-           //  startReading = 0;
+            char EPCBuf[48];
+            char EPC1Buf[16];
+            char EPC2Buf[16];
+            char EPC3Buf[16];
+            uint16_t writeEPC[6];
+            startReading = 0;
 
-           //  char* mens = strtok(msg, " ");
-           //  char* ant = strtok(NULL, " ");
-           //  char* t = strtok(NULL, " ");
-           //  char* TID = strtok(NULL, " ");
-           //  char* EPC = strtok(NULL, " ");
-           //  //char* EPC1 = strtok(NULL, " ");
-           //  //char* EPC2 = strtok(NULL, " ");
-           //  //char* EPC3 = strtok(NULL, " ");
-           //  ////sprintf(EPCBuf, "%s", EPCHex);
-           //  //sprintf(EPC1Buf, "%s", EPC1);
-           //  //sprintf(EPC2Buf, "%s", EPC2); 
-           //  //sprintf(EPC3Buf, "%s", EPC3);
+            char* mens = strtok(msg, " ");
+            char* ant = strtok(NULL, " ");
+            char* t = strtok(NULL, " ");
+            char* TID = strtok(NULL, " ");
+            char* EPC = strtok(NULL, " ");
 
-           //  //string2hexString(EPC, writeEPC);
+            int* ptr = hexadecimalToDecimal(EPC, writeEPC);
 
-           //  int* ptr = hexadecimalToDecimal(EPC, writeEPC);
+            STUHFL_T_Read readData = STUHFL_O_READ_INIT();
 
-           //  STUHFL_T_Read readData = STUHFL_O_READ_INIT();
+            readData.memoryBank = STUHFL_D_GEN2_MEMORY_BANK_EPC;
+            readData.wordPtr = 0;
+            readData.numBytesToRead = STUHFL_D_MAX_READ_DATA_LEN;
+            memset(readData.pwd, 0, 4);
 
-           //  readData.memoryBank = STUHFL_D_GEN2_MEMORY_BANK_EPC;
-           //  readData.wordPtr = 0;
-           //  readData.numBytesToRead = STUHFL_D_MAX_READ_DATA_LEN;
-           //  memset(readData.pwd, 0, 4);
+            readTagData((void *)clientRead);
+            writeTagData(writeEPC);
 
-           //  readTagData();
-           // // writeTagData(EPCBuf);
-           //  writeTagData(writeEPC);
-           //  //HANDLE thread = CreateThread(NULL, 0, writeTagData, writeEPC, 0, NULL);
             send_tcp_message("OK#", client);
 
         }

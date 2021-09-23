@@ -360,7 +360,7 @@ typedef struct {
 #define STUHFL_D_ANTENNA_4      3
 #define STUHFL_D_ANTENNA_ALT    0xFF
 typedef struct {
-    int8_t      txOutputLevel;                  /**< I/O Param: Tx output level. See Modulator control register 3 for further info. Range [0db..-19db] .. -0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19 */
+    float      txOutputLevel;                  /**< I/O Param: Tx output level. See Modulator control register 3 for further info. Range [0db..-19db] .. -0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10,-11,-12,-13,-14,-15,-16,-17,-18,-19 */
     int8_t      rxSensitivity;                  /**< I/O Param: Rx sensitivity level. Range [-17dB..+19dB] .. -17,-14,-11,-9,-8,-6,-5,-3,-2,0,1,3,4,6,7,9,10,13,16,19 */
     uint8_t     usedAntenna;                    /**< I/O Param: Antenna to be used */
     uint16_t    alternateAntennaInterval;       /**< I/O Param: Time in ms for alternating the antennas when alternating mode is used */

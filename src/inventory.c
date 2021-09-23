@@ -60,11 +60,6 @@ STUHFL_T_ST25RU3993_TxRxCfg txRxCfg;
 void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
 {
 
-    STUHFL_T_ST25RU3993_TxRxCfg TxRxCfg = STUHFL_O_ST25RU3993_TXRX_CFG_INIT();          // Set to FW default values
-    TxRxCfg.alternateAntennaInterval = 100;
-    TxRxCfg.usedAntenna = (uint8_t)antenna;
-    Set_TxRxCfg(&TxRxCfg);
-
     STUHFL_T_ST25RU3993_Gen2_InventoryCfg invGen2Cfg = STUHFL_O_ST25RU3993_GEN2_INVENTORY_CFG_INIT();     // Set to FW default values
     invGen2Cfg.inventoryOption.fast = true;
     invGen2Cfg.inventoryOption.autoAck = false;
@@ -77,11 +72,16 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
 
     //
     STUHFL_T_ST25RU3993_Gen2_ProtocolCfg gen2ProtocolCfg = STUHFL_O_ST25RU3993_GEN2_PROTOCOL_CFG_INIT();  // Set to FW default values
+    gen2ProtocolCfg.tari = STUHFL_D_GEN2_TARI_12_50;
+    gen2ProtocolCfg.blf = STUHFL_D_GEN2_BLF_320;
+    gen2ProtocolCfg.coding = STUHFL_D_GEN2_CODING_MILLER2;
+    gen2ProtocolCfg.trext = STUHFL_D_TREXT_ON;
     Set_Gen2_ProtocolCfg(&gen2ProtocolCfg);
 
     STUHFL_T_ST25RU3993_FreqLBT freqLBT = STUHFL_O_ST25RU3993_FREQ_LBT_INIT();                          // Set to FW default values
     freqLBT.listeningTime = 0;
     Set_FreqLBT(&freqLBT);
+
 
     STUHFL_T_ST25RU3993_FreqHop freqHop = STUHFL_O_ST25RU3993_FREQ_HOP_INIT();              // Set to FW default values
     Set_FreqHop(&freqHop);
@@ -90,10 +90,7 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
     Gen2Select.mode = STUHFL_D_GEN2_SELECT_MODE_CLEAR_LIST;  // Clear all Select filters
     Gen2_Select(&Gen2Select);
 
-    STUHFL_T_ST25RU3993_ChannelList         channelList = STUHFL_O_ST25RU3993_CHANNEL_LIST_INIT();
-    channelList.antenna = (uint8_t)antenna;
-    channelList.persistent = false;
-    channelList.channelListIdx = 0;
+    STUHFL_T_ST25RU3993_ChannelList channelList = STUHFL_O_ST25RU3993_CHANNEL_LIST_INIT();
     Set_ChannelList(&channelList);       // Nota: Profile is implicitely switched to STUHFL_D_PROFILE_NEWTUNING
 
     channelList.antenna = STUHFL_D_ANTENNA_1;
@@ -105,10 +102,16 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
     channelList.antenna = STUHFL_D_ANTENNA_4;
     Set_ChannelList(&channelList);
 
+
     // printf("Tuning Profile frequencies: algo: TUNING_ALGO_SLOW\n");
 
-// Get freq profile + number of frequencies
+    // Get freq profile + number of frequencies
     STUHFL_T_ST25RU3993_FreqProfileInfo   freqProfileInfo = STUHFL_O_ST25RU3993_FREQ_PROFILE_INFO_INIT();
+    freqProfileInfo.profile = STUHFL_D_PROFILE_EUROPE;
+    Set_FreqProfile(&freqProfileInfo);
+
+
+    //TUNNING FRECUENCY FOR CURRENT PROFILE AND CURRENT ANTENNA
     Get_FreqProfileInfo(&freqProfileInfo);
 
     // Tune for each freq
@@ -138,14 +141,6 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
         Set_AntennaPower(&antPwr);
     }
 }
-
-//SOCKET clientRead;
-//
-//
-//
-//void setSocket(SOCKET socket) {
-//    clientRead = socket;
-// }
 
 
 /**
@@ -276,7 +271,7 @@ float calculateRSSI(int rssiLogI, int rssiLogQ)
     }
 
     rssi = 2.1 * ((rssiLogI + rssiLogQ) / 2) - G;
-    printf("RSSI: %2f", rssi);
+    //printf("RSSI: %.2f\n", rssi);
 
     return rssi;
 }
@@ -286,7 +281,7 @@ float calculateRSSI(int rssiLogI, int rssiLogQ)
 void logInventory(STUHFL_T_ActionCycleData data)
 {
 
-   // printf("LOG INVENTORY\n");
+   
     STUHFL_T_InventoryData* invData = ((STUHFL_T_InventoryData*)data);
     //uint32_t duration = (invData->tagListSize ? invData->tagList[0].timestamp : invData->statistics.timestamp) - startTickTime;
     //readRate = duration ? ((float)totalTAGs * ((float)1000.0 / (float)duration)) : (float)0.0;
@@ -303,12 +298,12 @@ void logInventory(STUHFL_T_ActionCycleData data)
     int rssiLogQ = 0;
     uint8_t usedAntena = 0;
 
-
+    //printf("INVDATA-> tagListSize = %dn", invData->tagListSize);
     if (invData->tagListSize != 0) {
         for (int tags = 0; tags < invData->tagListSize; tags++) {
             rssiLogI = invData->tagList[tags].rssiLogI;
             rssiLogQ = invData->tagList[tags].rssiLogQ;
-            printf("RSSI Log I %u Q %u\n", rssiLogI, rssiLogQ);
+            //printf("RSSI Log I %u Q %u\n", rssiLogI, rssiLogQ);
             //printf("RSSI Log Mean %u\n", rssiLogMean);
             float rssi = calculateRSSI(rssiLogI, rssiLogQ);
 
@@ -318,7 +313,7 @@ void logInventory(STUHFL_T_ActionCycleData data)
             }
             usedAntena = invData->tagList[tags].antenna;
             //sprintf(mensaje, "$%s,%u,%u#", epc, usedAntena, rssiLinQ);
-            sprintf(mensaje, "$%s,%u,%f#", epc, usedAntena, rssi);
+            sprintf(mensaje, "$%s,%u,%.2f#", epc, usedAntena, rssi);
             printf("tag para enviar: %s\n", mensaje);
             memset(epc, 0, sizeof(epc));
             send_tcp_message(mensaje, clientRead);
@@ -406,7 +401,6 @@ char* packInt(uint16_t x) {
 
     return myInt;
 }
-
 
 void writeTagData(uint16_t epc[6]) {
     //void writeTagData(char* epc) {

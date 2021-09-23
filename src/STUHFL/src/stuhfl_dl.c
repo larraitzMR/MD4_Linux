@@ -161,6 +161,7 @@ STUHFL_T_RET_CODE CALL_CONV STUHFL_F_SetParam(STUHFL_T_PARAM param, STUHFL_T_PAR
     //TRACE_DL_LOG_START();
     STUHFL_T_RET_CODE ret = STUHFL_F_SetMultipleParams(1, &param, value);
     //TRACE_DL_LOG("STUHFL_F_SetParam(param = 0x%x, *value = 0x%x) = %d", param, value, ret);
+    //printf("STUHFL_F_SetParam(param = 0x%x, *value = 0x%x) = %d", param, value, ret);
     return ret;
 }
 STUHFL_T_RET_CODE CALL_CONV STUHFL_F_GetParam(STUHFL_T_PARAM param, STUHFL_T_PARAM_VALUE value)
@@ -168,6 +169,7 @@ STUHFL_T_RET_CODE CALL_CONV STUHFL_F_GetParam(STUHFL_T_PARAM param, STUHFL_T_PAR
     //TRACE_DL_LOG_START();
     STUHFL_T_RET_CODE ret = STUHFL_F_GetMultipleParams(1, &param, value);
     //TRACE_DL_LOG("STUHFL_F_GetParam(param = 0x%x, *value = 0x%x) = %d", param, value, ret);
+   // printf("STUHFL_F_GetParam(param = 0x%x, *value = 0x%x) = %d", param, value, ret);
     return ret;
 }
 
@@ -1129,11 +1131,23 @@ STUHFL_T_RET_CODE SetParam_SndPayload_TYPE_ST25RU3993(STUHFL_T_PARAM param, STUH
     }
 
     case STUHFL_KEY_RWD_TXRX_CFG: {
-        STUHFL_T_ST25RU3993_TxRxCfg* txRxCfg = (STUHFL_T_ST25RU3993_TxRxCfg*)&(((uint8_t*)values)[*valuesOffset]);
+        STUHFL_T_ST25RU3993_TxRxCfg *txRxCfg = (STUHFL_T_ST25RU3993_TxRxCfg*)&(((uint8_t *)values)[*valuesOffset]);
         *valuesOffset = (uint16_t)(*valuesOffset + (uint16_t)sizeof(STUHFL_T_ST25RU3993_TxRxCfg));
+        int tmpPayloadOffset = *sndPayloadOffset;
         *sndPayloadOffset = (uint16_t)(*sndPayloadOffset + (uint16_t)addTlvExt(&sndPayload[*sndPayloadOffset], STUHFL_TAG_TXRX_CFG, sizeof(STUHFL_T_ST25RU3993_TxRxCfg), txRxCfg));
+        int8_t tag = (int)sndPayload[tmpPayloadOffset];
+        int8_t len = (int)sndPayload[tmpPayloadOffset + 1];
+        float tx = 0.0;
+        memcpy(&tx, &sndPayload[tmpPayloadOffset + 2], sizeof(float));
+        int8_t rx = (int8_t)sndPayload[tmpPayloadOffset + 6];
+        uint8_t used = (uint8_t)sndPayload[tmpPayloadOffset + 7];
+        uint8_t alter = (uint8_t)sndPayload[tmpPayloadOffset + 8];
+        uint8_t rfu = (uint8_t)sndPayload[tmpPayloadOffset + 9];
+
+        printf("tag-> %d, len->%d, tx->%.2f, rx ->%d, used->%d, alter->%d, rfu->%d \r\n)", tag, len, tx, rx, used, alter, rfu);
         TRACE_DL_LOG_APPEND(" TxRxCfg(txOutputLevel: %d, rxSensitivity: %d, usedAntenna: %d, alternateAntennaInterval: %d)", txRxCfg->txOutputLevel, txRxCfg->rxSensitivity, txRxCfg->usedAntenna, txRxCfg->alternateAntennaInterval);
         break;
+
     }
 
     case STUHFL_KEY_RWD_POWER_AMPLIFIER_CFG: {

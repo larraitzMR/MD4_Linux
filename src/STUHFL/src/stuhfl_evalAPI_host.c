@@ -1004,6 +1004,8 @@ STUHFL_DLL_API STUHFL_T_RET_CODE CALL_CONV Gen2_GenericCmd(STUHFL_T_Gen2_Generic
     char tb[3][TB_SIZE];
     TRACE_EVAL_API("Gen2_GenericCmd(pwd: 0x%s, cmd: 0x%02x, noResponseTime: %d, sndDataBitLength: %d, sndData: 0x%s.., expectedRcvDataBitLength: %d, rcvDataLength: %d, rcvData: 0x%s..) = %d",
         byteArray2HexString(tb[0], TB_SIZE, genericCmd->pwd, STUHFL_D_PASSWORD_LEN), genericCmd->cmd, genericCmd->noResponseTime, genericCmd->sndDataBitLength, byteArray2HexString(tb[1], TB_SIZE, genericCmd->sndData, 4), genericCmd->expectedRcvDataBitLength, genericCmd->rcvDataLength, byteArray2HexString(tb[2], TB_SIZE, genericCmd->rcvData, 4), retCode);
+   // printf("Gen2_GenericCmd(pwd: 0x%s, cmd: 0x%02x, noResponseTime: %d, sndDataBitLength: %d, sndData: 0x%s.., expectedRcvDataBitLength: %d, rcvDataLength: %d, rcvData: 0x%s..) = %d",
+     //   byteArray2HexString(tb[0], TB_SIZE, genericCmd->pwd, STUHFL_D_PASSWORD_LEN), genericCmd->cmd, genericCmd->noResponseTime, genericCmd->sndDataBitLength, byteArray2HexString(tb[1], TB_SIZE, genericCmd->sndData, 4), genericCmd->expectedRcvDataBitLength, genericCmd->rcvDataLength, byteArray2HexString(tb[2], TB_SIZE, genericCmd->rcvData, 4), retCode);
 #undef TB_SIZE
     return retCode;
 }
