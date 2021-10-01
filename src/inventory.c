@@ -38,8 +38,6 @@ char tidbin[4];
 
 STUHFL_T_ST25RU3993_TxRxCfg txRxCfg;
 
-
-
 //SOCKET clientRead;
 
 
@@ -59,6 +57,8 @@ STUHFL_T_ST25RU3993_TxRxCfg txRxCfg;
 
 void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
 {
+    printf("setupGen2Config\n");
+    STUHFL_T_RET_CODE ret;
 
     STUHFL_T_ST25RU3993_Gen2_InventoryCfg invGen2Cfg = STUHFL_O_ST25RU3993_GEN2_INVENTORY_CFG_INIT();     // Set to FW default values
     invGen2Cfg.inventoryOption.fast = true;
@@ -68,7 +68,8 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
     invGen2Cfg.adaptiveSensitivity.enable = true;
     invGen2Cfg.queryParams.toggleTarget = true;
     invGen2Cfg.queryParams.targetDepletionMode = true;
-    Set_Gen2_InventoryCfg(&invGen2Cfg);
+    ret = Set_Gen2_InventoryCfg(&invGen2Cfg);
+    printf("Set_Gen2_InventoryCfg %d\n", ret);
 
     //
     STUHFL_T_ST25RU3993_Gen2_ProtocolCfg gen2ProtocolCfg = STUHFL_O_ST25RU3993_GEN2_PROTOCOL_CFG_INIT();  // Set to FW default values
@@ -76,44 +77,53 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
     gen2ProtocolCfg.blf = STUHFL_D_GEN2_BLF_320;
     gen2ProtocolCfg.coding = STUHFL_D_GEN2_CODING_MILLER2;
     gen2ProtocolCfg.trext = STUHFL_D_TREXT_ON;
-    Set_Gen2_ProtocolCfg(&gen2ProtocolCfg);
+    ret = Set_Gen2_ProtocolCfg(&gen2ProtocolCfg);
+    printf("Set_Gen2_ProtocolCfg %d\n", ret);
 
     STUHFL_T_ST25RU3993_FreqLBT freqLBT = STUHFL_O_ST25RU3993_FREQ_LBT_INIT();                          // Set to FW default values
     freqLBT.listeningTime = 0;
-    Set_FreqLBT(&freqLBT);
-
+    ret = Set_FreqLBT(&freqLBT);
+    printf("Set_FreqLBT %d\n", ret);
 
     STUHFL_T_ST25RU3993_FreqHop freqHop = STUHFL_O_ST25RU3993_FREQ_HOP_INIT();              // Set to FW default values
-    Set_FreqHop(&freqHop);
+    ret = Set_FreqHop(&freqHop);
+    printf("Set_FreqHop %d\n", ret);
 
     STUHFL_T_Gen2_Select    Gen2Select = STUHFL_O_GEN2_SELECT_INIT();                        // Set to FW default values
     Gen2Select.mode = STUHFL_D_GEN2_SELECT_MODE_CLEAR_LIST;  // Clear all Select filters
-    Gen2_Select(&Gen2Select);
+    ret = Gen2_Select(&Gen2Select);
+    printf("Gen2_Select %d\n", ret);
 
     STUHFL_T_ST25RU3993_ChannelList channelList = STUHFL_O_ST25RU3993_CHANNEL_LIST_INIT();
-    Set_ChannelList(&channelList);       // Nota: Profile is implicitely switched to STUHFL_D_PROFILE_NEWTUNING
+    ret = Set_ChannelList(&channelList);       // Nota: Profile is implicitely switched to STUHFL_D_PROFILE_NEWTUNING
+    printf("Set_ChannelList %d\n", ret);
 
     channelList.antenna = STUHFL_D_ANTENNA_1;
-    Set_ChannelList(&channelList);
+    ret = Set_ChannelList(&channelList);
+    printf("Set_ChannelList 1 %d\n", ret);
+
     channelList.antenna = STUHFL_D_ANTENNA_2;
-    Set_ChannelList(&channelList);
+    ret = Set_ChannelList(&channelList);
+    printf("Set_ChannelList 2 %d\n", ret);
+
     channelList.antenna = STUHFL_D_ANTENNA_3;
-    Set_ChannelList(&channelList);
+    ret = Set_ChannelList(&channelList);
+    printf("Set_ChannelList 3 %d\n", ret);
     channelList.antenna = STUHFL_D_ANTENNA_4;
-    Set_ChannelList(&channelList);
+    ret = Set_ChannelList(&channelList);
+    printf("Set_ChannelList 4 %d\n", ret);
 
-
-    // printf("Tuning Profile frequencies: algo: TUNING_ALGO_SLOW\n");
+    // printf("Tuning Profile frequencies: algo: TUNING_ALGO_SLOW %d\n", ret);
 
     // Get freq profile + number of frequencies
     STUHFL_T_ST25RU3993_FreqProfileInfo   freqProfileInfo = STUHFL_O_ST25RU3993_FREQ_PROFILE_INFO_INIT();
     freqProfileInfo.profile = STUHFL_D_PROFILE_EUROPE;
-    Set_FreqProfile(&freqProfileInfo);
-
+    ret = Set_FreqProfile(&freqProfileInfo);
+    printf("Set_FreqProfile %d\n", ret);
 
     //TUNNING FRECUENCY FOR CURRENT PROFILE AND CURRENT ANTENNA
-    Get_FreqProfileInfo(&freqProfileInfo);
-
+    ret = Get_FreqProfileInfo(&freqProfileInfo);
+    printf("Get_FreqProfileInfo %d\n", ret);
     // Tune for each freq
     for (uint8_t i=0 ; i<freqProfileInfo.numFrequencies ; i++) {
         STUHFL_T_ST25RU3993_TuningTableEntry    tuningTableEntry = STUHFL_O_ST25RU3993_TUNING_TABLE_ENTRY_INIT();
@@ -121,24 +131,29 @@ void setupGen2Config(bool singleTag, bool freqHopping, int antenna)
         STUHFL_T_ST25RU3993_Tune                tune = STUHFL_O_ST25RU3993_TUNE_INIT();
 
         tuningTableEntry.entry = i;
-        Get_TuningTableEntry(&tuningTableEntry);               // Retrieve frequency related to this entry
+        ret = Get_TuningTableEntry(&tuningTableEntry);               // Retrieve frequency related to this entry
+        printf("Get_TuningTableEntry %d\n", ret);
 
         tuningTableEntry.entry = i;
         memset(tuningTableEntry.applyCapValues, false, STUHFL_D_MAX_ANTENNA);    // Do not apply caps, only set entry
-        Set_TuningTableEntry(&tuningTableEntry);
+        ret = Set_TuningTableEntry(&tuningTableEntry);
+        printf("Set_TuningTableEntry %d\n", ret);
 
         antPwr.mode = STUHFL_D_ANTENNA_POWER_MODE_ON;
         antPwr.timeout = 0;
         antPwr.frequency = tuningTableEntry.freq;
-        Set_AntennaPower(&antPwr);
+        ret = Set_AntennaPower(&antPwr);
+        printf("Set_AntennaPower %d\n", ret);
 
         tune.algo = STUHFL_D_TUNING_ALGO_SLOW;
-        Tune(&tune);
+        ret = Tune(&tune);
+        printf("Tune %d\n", ret);
 
         antPwr.mode = STUHFL_D_ANTENNA_POWER_MODE_OFF;
         antPwr.timeout = 0;
         antPwr.frequency = tuningTableEntry.freq;
-        Set_AntennaPower(&antPwr);
+        ret = Set_AntennaPower(&antPwr);
+        printf("Set_AntennaPower %d\n", ret);
     }
 }
 
@@ -160,35 +175,7 @@ STUHFL_T_RET_CODE inventoryRunner(STUHFL_T_InventoryData* data)
     uint32_t millis = getMilliCount();
 
     STUHFL_T_InventoryData* invData = ((STUHFL_T_InventoryData*)data);
-    
-
-    //if (invData->rfu == 0) {
-    // count successful reads
     totalTAGs = invData->statistics.tagCnt;
-
-    //if (startTickTime == 0) {
-    //    startTickTime = invData->tagListSize ? invData->tagList[0].timestamp : invData->statistics.timestamp;
-    //}
-
-    //// screen update should not be done too frequent, as long
-    //// it will block receiption during inventory loop
-    //if ((millis - localCycleTime) < UPDATE_CYCLE_TIME_MS) {
-    //    return STUHFL_ERR_NONE;
-    //}
-    //localCycleTime = millis;
-
-    
-    //logInventory(data);
-
-//#if defined(WIN32) || defined(WIN64)
-//    // 'q' can be pressed to end inventory
-//    if (_kbhit()) {
-//        if (_getch() == 'q') {
-//            Inventory_RunnerStop();
-//        }
-//    }
-//#elif defined (POSIX)
-//#endif
     return STUHFL_ERR_NONE;
 }
 
@@ -208,7 +195,6 @@ static STUHFL_T_RET_CODE inventoryRunnerEndCallBack(STUHFL_T_InventoryData* cycl
     return STUHFL_ERR_NONE;
 }
 
-
 /**
   * @brief      Get Rwd registers demo
   *
@@ -218,13 +204,45 @@ static STUHFL_T_RET_CODE inventoryRunnerEndCallBack(STUHFL_T_InventoryData* cycl
   */
 int readRegister(int regNumb)
 {
-    // read register (one by one)
     STUHFL_T_ST25RU3993_Register reg = STUHFL_O_ST25RU3993_REGISTER_INIT();
-
     reg.addr = (uint8_t)regNumb;
     reg.data = (uint8_t)0;
     Get_Register(&reg);
+    printf("Register address: %u data: %u\n", reg.addr, reg.data);
+    return reg.data;
+}
 
+/**
+  * @brief      Get Rwd registers demo
+  *
+  * @param      None
+  *
+  * @retval     None
+  */
+int readRegister9()
+{
+    STUHFL_T_ST25RU3993_Register reg = STUHFL_O_ST25RU3993_REGISTER_INIT();
+    reg.addr = (uint8_t)9;
+    reg.data = (uint8_t)0;
+    Get_Register(&reg);
+    printf("Register address: %u data: %u\n", reg.addr, reg.data);
+    return reg.data;
+}
+
+/**
+  * @brief      Get Rwd registers demo
+  *
+  * @param      None
+  *
+  * @retval     None
+  */
+int readRegister10()
+{
+    STUHFL_T_ST25RU3993_Register reg = STUHFL_O_ST25RU3993_REGISTER_INIT();
+    reg.addr = (uint8_t)10;
+    reg.data = (uint8_t)0;
+    Get_Register(&reg);
+    printf("Register address: %u data: %u\n", reg.addr, reg.data);
     return reg.data;
 }
 
@@ -232,8 +250,13 @@ float calculateRSSI(int rssiLogI, int rssiLogQ)
 {
     float rssi = 0.0;
 
-    int reg09 = readRegister(9);
-    int reg0A = readRegister(10);
+    uint8_t reg09 = 0;
+    uint8_t reg0A = 0;
+
+    //reg09 = readRegister(9);
+    //reg0A = readRegister(10);
+    reg09 = readRegister9;
+    reg0A = readRegister10;
     int reg0Adesp = reg0A >> 6;
 
     char reg09Hex[3];
@@ -370,7 +393,7 @@ void demo_gen2Read(uint8_t* data)
 
     readData.memoryBank = STUHFL_D_GEN2_MEMORY_BANK_EPC;
     readData.wordPtr = 0;
-    readData.numBytesToRead = STUHFL_D_MAX_READ_DATA_LEN;
+    readData.numBytesToRead = 16;
     memset(readData.pwd, 0, 4);
 
     if (Gen2_Read(&readData) == STUHFL_ERR_NONE) {
@@ -381,7 +404,7 @@ void demo_gen2Read(uint8_t* data)
         }
     }
     else {
-        printf("NO SE PUEDE LEER");
+        printf("NO SE PUEDE LEER\n");
     }
 }
 
@@ -401,6 +424,7 @@ char* packInt(uint16_t x) {
 
     return myInt;
 }
+
 
 void writeTagData(uint16_t epc[6]) {
     //void writeTagData(char* epc) {
@@ -448,7 +472,7 @@ void writeTagData(uint16_t epc[6]) {
     memset(writeData.pwd, 0, 4);
     memcpy(writeData.data, &Buf[2], 2);
     if (Gen2_Write(&writeData) == STUHFL_ERR_NONE) {
-        printf("WRITE");
+        printf("\nWRITE\n");
     }
     else {
         printf("\nTag cannot be written\n");
@@ -461,7 +485,7 @@ void writeTagData(uint16_t epc[6]) {
     //memcpy(writeData.data, "\x12\x34", 2);
     memcpy(writeData.data, &Buf[3], 2);
     if (Gen2_Write(&writeData) == STUHFL_ERR_NONE) {
-        printf("WRITE");
+        printf("\nWRITE\n");
     }
     else {
         printf("\nTag cannot be written\n");
@@ -474,7 +498,7 @@ void writeTagData(uint16_t epc[6]) {
     memcpy(writeData.data, &Buf[4], 2);
     //memcpy(writeData.data, &Buf[1], 2);
     if (Gen2_Write(&writeData) == STUHFL_ERR_NONE) {
-        printf("WRITE");
+       printf("\nWRITE\n");
     }
     else {
         printf("\nTag cannot be written\n");
@@ -487,7 +511,7 @@ void writeTagData(uint16_t epc[6]) {
     memcpy(writeData.data, &Buf[5], 2);
     //memcpy(writeData.data, &Buf[1], 2);
     if (Gen2_Write(&writeData) == STUHFL_ERR_NONE) {
-        printf("WRITE");
+        printf("\nWRITE\n");
     }
     else {
         printf("\nTag cannot be written\n");

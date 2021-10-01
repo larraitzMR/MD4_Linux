@@ -105,6 +105,7 @@ int getSocketState()
 void initParams() {
 
     setupGen2Config(false, true, STUHFL_D_ANTENNA_1);
+    printf("setupGen2Config\n");
 //    setupGen2Config(false, true, STUHFL_D_ANTENNA_2);
 //    setupGen2Config(false, true, STUHFL_D_ANTENNA_3);
 //    setupGen2Config(false, true, STUHFL_D_ANTENNA_4);
@@ -152,8 +153,9 @@ void* stopInventory() {
 
 void* readTagData(void *arg) {
 
-    printf("Argumento readTagData: %d\n", (int8_t *)arg);
+    //printf("Argumento readTagData: %d\n", (int8_t *)arg);
 
+    char mensaje[60];
     memset(epc, 0, sizeof(epc));
 
     STUHFL_T_ST25RU3993_Gen2_InventoryCfg invGen2Cfg = STUHFL_O_ST25RU3993_GEN2_INVENTORY_CFG_INIT();     // Set to FW default values
@@ -191,7 +193,7 @@ void* readTagData(void *arg) {
 
             readData.memoryBank = STUHFL_D_GEN2_MEMORY_BANK_EPC;
             readData.wordPtr = 0;
-            readData.numBytesToRead = STUHFL_D_MAX_READ_DATA_LEN;
+            readData.numBytesToRead = 16;
             memset(readData.pwd, 0, 4);
 
             if (Gen2_Read(&readData) == STUHFL_ERR_NONE) {
@@ -232,7 +234,6 @@ void* readTagData(void *arg) {
 }
 
 
-
 int main(void) {
 	//printf("!!!Hello World!!!"); /* prints !!!Hello World!!! */
 	   //Servidor socket
@@ -255,27 +256,55 @@ int main(void) {
 	bool r = getComPort(comPort);
     printf("COM port: %s\n", comPort);
 	if (!r) {
+         printf("COM port error %b\n", r);
 		return 0;
 	}
 
 	STUHFL_T_RET_CODE ret = STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_PORT, (STUHFL_T_PARAM_VALUE)comPort);
+    if(ret != 0){
+        printf("STUHFL_KEY_PORT error %d\n", ret);
+        return 0;
+    } else {
+        printf("STUHFL_KEY_PORT ON %d\n", ret);
+    }
 	ret |= STUHFL_F_Connect(&device, sndData, SND_BUFFER_SIZE, rcvData, RCV_BUFFER_SIZE);
     if(ret != 0){
         printf("No se puede conectar con el módulo %d\n", ret);
         return 0;
+    } else {
+        printf("Connected to the module %d\n", ret);
     }
 
 	// enable data line
 	uint8_t on = TRUE;
 	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_DTR, (STUHFL_T_PARAM_VALUE)&on);
+    if(ret != 0){
+        printf("DTR error %d\n", ret);
+        return 0;
+    } else {
+        printf("DTR ON %d\n", ret);
+    }
 	// toogle reset line
 	on = TRUE;
 	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_RTS, (STUHFL_T_PARAM_VALUE)&on);
+    if(ret != 0){
+        printf("RTS ON error %d\n", ret);
+        return 0;
+    } else {
+        printf("RTS ON %d\n", ret);
+    }
 	on = FALSE;
 	ret |= STUHFL_F_SetParam(STUHFL_PARAM_TYPE_CONNECTION | STUHFL_KEY_RTS, (STUHFL_T_PARAM_VALUE)&on);
+    if(ret != 0){
+        printf("RTS OFF error %d\n", ret);
+        return 0;
+    } else {
+        printf("RTS ON %d\n", ret);
+    }
 
 	initParams();
 
+    printf("initParams\n");
     st_fd = create_tcp_conection(5557) ;
 
     /* Esperar la petición del cliente. */
